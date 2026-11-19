@@ -291,6 +291,17 @@ def efektler():
     koy(b, can(88, 0.20, 1.0), Z.BILDIRIM, 1, 0.3)
     koy(b, can(93, 0.20, 1.4), Z.BILDIRIM + 0.12, 1, 0.3)
     koy(b, supurge(0.5, 2600, 500, 0.16), Z.S6_GECIS, 1, 0)
+    # Etkinlik: ip gerilir, kart kalkar, nesneler kelimeyle belirir, dokunuş, mahalle gelir
+    koy(b, supurge(0.6, 900, 5200, 0.16, q=2), Z.ETK_BAS + 0.05, 1, 0)
+    koy(b, supurge(0.30, 900, 4200, 0.22), Z.ETK_KART, 1, 0.1)
+    for i, (tn, m) in enumerate([(14.73, 72), (14.86, 76), (15.68, 77), (15.80, 81), (16.26, 79), (16.38, 84)]):
+        koy(b, tus(m, 0.18, 0.2) + np.pad(tik(1900, 0.25), (0, len(tus(m, 0.18, 0.2)) - int(0.03 * SR))), tn, 1, (-0.4, -0.1, 0.2, 0.4, -0.3, 0.3)[i])
+    koy(b, dokunus() * 0.8, Z.ETK_DOKUNUS, 1, 0)
+    koy(b, can(84, 0.2, 1.2), Z.ETK_DOKUNUS + 0.07, 1, -0.1); koy(b, can(91, 0.2, 1.5), Z.ETK_DOKUNUS + 0.19, 1, 0.1)
+    koy(b, tik(2800, 0.3), Z.ETK_DOKUNUS + 0.30, 1, 0.2)
+    for i, tn in enumerate((17.93, 18.08, 18.23)):
+        koy(b, tus((74, 77, 81)[i], 0.18, 0.18), tn, 1, (-0.4, 0.0, 0.4)[i])
+    koy(b, supurge(0.5, 2600, 500, 0.16), Z.ETK_GECIS, 1, 0)
     # S7-S8: yeşil pinin yaslanışı, yazı açılışı, kapanış
     koy(b, pin_sesi(0.45, 60), Z.YESIL_YASLAN, 1, -0.3)
     koy(b, supurge(0.5, 900, 3800, 0.10), Z.YAZI_ACILIS - 0.05, 1, 0.2)

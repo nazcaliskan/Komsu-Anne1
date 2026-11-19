@@ -4,7 +4,7 @@ Kullanım: python3 miks.py <kayıt adı, ör. sarah_1> [...]"""
 import sys, json, subprocess, os
 import numpy as np, soundfile as sf, pyloudnorm as pyln
 from scipy import signal
-import zaman as Z, sentez as S
+import zaman as Z, sentez as S, muzik2
 from vo_olc import satirlar
 
 SR = S.SR
@@ -96,7 +96,7 @@ def kur(ad, mz, fx):
     kis = np.minimum.reduce([np.roll(kis, s) for s in (0, n // 4, -n // 4)])
     fxk = 0.6 + 0.4 * kis ** 0.5                     # efektler seslendirme altında hafifçe geri çekilir
     # S6 kelime tıkları
-    fx = fx.copy(); S.soz_tiklari(fx, [b for w, b, e in parcalar[5][2]])
+    fx = fx.copy(); S.soz_tiklari(fx, [b for w, b, e in parcalar[-2][2]])
     miks = np.stack([vo, vo], 1) + mz * kis[:, None] + fx * fxk[:, None] * 0.65
     son_n = int(0.2 * SR); miks[-son_n:] *= np.linspace(1, 0, son_n)[:, None] ** 1.5
     # master: -14 LUFS, tavan -1,25 dBTP (4x örneklemeyle gerçek tepe)
@@ -127,8 +127,8 @@ def kur(ad, mz, fx):
 
 
 if __name__ == "__main__":
-    mz, fx = S.muzik(), S.efektler()
-    mz *= 10 ** ((-21 - olcer.integrated_loudness(mz)) / 20)      # müzik yatağı: -21 LUFS
+    mz, fx = muzik2.muzik(), S.efektler()
+    mz *= 10 ** ((-18.5 - olcer.integrated_loudness(mz)) / 20)    # müzik yatağı: -18,5 LUFS (canlı, önde)
     print("müzik tepe", round(db(np.abs(mz).max()), 1), "dB | efekt tepe", round(db(np.abs(fx).max()), 1), "dB")
     os.makedirs(CIKTI, exist_ok=True)
     sf.write(f"{CIKTI}/muzik.wav", mz / max(1, np.abs(mz).max() * 1.05), SR, subtype="PCM_24")
