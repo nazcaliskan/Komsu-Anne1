@@ -26,7 +26,7 @@ BAHCE = (223, 244, 235)              # NIL_ACIK
 TABAN = (231, 217, 203)
 GUNES = (1.0, 0.72)                 # güneş sol üstte: gölgeler sağ alta düşer (yükseklik başına)
 GOLGE_RENK = (92, 70, 58)
-CATILAR = [(250, 148, 134), (255, 184, 166), (252, 242, 232), (150, 212, 188), (255, 208, 194), (196, 232, 216), (246, 166, 150)]   # somon / yavruağzı / krem / nil
+CATILAR = [(255, 178, 191), (255, 196, 207), (255, 227, 233), (150, 212, 188), (252, 242, 232), (196, 232, 216), (255, 208, 217)]   # açık yavruağzı / nil / krem
 DUVAR = (247, 233, 219)
 
 
@@ -231,7 +231,7 @@ def _ev_ciz(dst, M, z, ev, f):
         dort(0, 1, 0.84, 1, GOLGE_RENK, 0.16)                    # saçak gölgesi
         dort(0, 1, 0, 0.16, GOLGE_RENK, 0.10)                    # duvar dibinde ortam kararması
         if n[1] > 0.8 and h > 14:                                # güney duvarı: kapı ve pencereler
-            dort(0.42, 0.58, 0.0, 0.58, NIL_KOYU if oz == "B" else (224, 112, 98))
+            dort(0.42, 0.58, 0.0, 0.58, NIL_KOYU if oz == "B" else (236, 122, 143))
             dort(0.42, 0.58, 0.52, 0.58, GOLGE_RENK, 0.22)
             for u0 in (0.12, 0.70):
                 dort(u0 - 0.012, u0 + 0.192, 0.25, 0.30, _ton(DUVAR, 0.78))          # denizlik
@@ -282,8 +282,16 @@ def _alan_derinligi(tuval, merkez, guc, itis=0.0):
 
 
 # ------------------------------------------------------------------ puset ve sayaç rozetleri
-PUSET_AN = 8.10                                         # "puset" kelimesi
-ROZET_AN = [8.26, 8.56, 8.86, 9.12]                     # 3. rozet "dört", 4. rozet "bebek" kelimesinde
+PUSET_AN = 8.10
+ROZET_ORAN = (0.10, 0.30, 0.58, 1.0)                    # rota üzerindeki dört evin hizası (yay uzunluğu oranı)
+
+
+@functools.lru_cache(maxsize=1)
+def _rozet_anlari():
+    """Her rozet, puset o evin önünden geçtiği an açılır; dördüncüsü B evine varışta (Z.ROTA_SON)."""
+    ts = np.linspace(Z.ROTA_BAS, Z.ROTA_SON, 400)
+    p = np.array([_ilerleme(u) for u in ts])
+    return [float(ts[min(len(ts) - 1, int(np.searchsorted(p, f)))]) for f in ROZET_ORAN]
 
 
 def _puset(dst, M, z, D, t):
@@ -348,7 +356,7 @@ def _rozet_yerleri(dikey):
     """Rota üzerindeki dört evin kapı önü (dünya). Dördüncüsü B evi."""
     D = _duzen(DIKEY if dikey else YATAY)
     kullanilan, out = set(), []
-    for f in (0.10, 0.30, 0.58):
+    for f in ROZET_ORAN[:3]:
         q = yol_nokta(D["rota"], f)
         en = None
         for i, ev in enumerate(_evler()):
@@ -397,6 +405,20 @@ def ciz(t, K, tuval):
     for _, ev, f in sorted(gorunen, key=lambda e: e[0]):
         _ev_ciz(tuval, M, z, ev, f)
 
+    # sığ alan derinliği: hep hafif; kapıya itişte belirgin + yakınlaşma bulanıklığı (çizgi, puset, kart net kalır)
+    _alan_derinligi(tuval, s, 0.38 + 0.62 * yumusak(ara(t, 9.55, 10.1)), 0.11 * gir(ara(t, 9.72, 10.25), 1.6))
+
+    # mercan çizgi: t >= 7.60 (öncesinde noktayı birleştirici çizer)
+    if t >= 7.60:
+        def yol(u):
+            Mu = _kamera(u, K, D)[0]
+            return nokta(Mu, yol_parca(D["rota"], 0.0, max(_ilerleme(u), 0.0015)))
+        kal = 13 * z
+        if _ilerleme(t) < 1 or t < 10.0:
+            cizgi(tuval, alt_zaman(yol, t, 4), kal)
+        else:
+            cizgi(tuval, yol(t), kal)
+
     # yeşil pin: ~8.4'te düşer, 9.60'ta çizgi ulaşınca zıplar
     px, py = nokta(M, [D["pin"]])[0]
     boy = 122 * z
@@ -414,45 +436,18 @@ def ciz(t, K, tuval):
                 halka(tuval, px, py - 4 * z, (18 + 120 * cik(x, 2)) * z, (1 - x) * 0.75, NIL, kalinlik=max(2, 5 * z * (1 - x * 0.5)))
         pin(tuval, px, py + dy, boy, NIL, a_pin, olcek_x=2 - ez, olcek_y=ez, delik=(250, 244, 236))
 
-    # sığ alan derinliği: hep hafif; kapıya itişte belirgin + yakınlaşma bulanıklığı (çizgi, puset, kart net kalır)
-    _alan_derinligi(tuval, s, 0.38 + 0.62 * yumusak(ara(t, 9.55, 10.1)), 0.11 * gir(ara(t, 9.72, 10.25), 1.6))
-
-    # mercan çizgi: t >= 7.60 (öncesinde noktayı birleştirici çizer)
-    if t >= 7.60:
-        def yol(u):
-            Mu = _kamera(u, K, D)[0]
-            return nokta(Mu, yol_parca(D["rota"], 0.0, max(_ilerleme(u), 0.0015)))
-        kal = 13 * z
-        if _ilerleme(t) < 1 or t < 10.0:
-            cizgi(tuval, alt_zaman(yol, t, 4), kal)
-        else:
-            cizgi(tuval, yol(t), kal)
-
-    # puset çizginin ucunda ilerler; geçtiği dört evin kapısında sayaç rozetleri açılır
-    _puset(tuval, M, z, D, t)
-    rb = 44 if K.dikey else 38
-    for i, (w, an) in enumerate(zip(_rozet_yerleri(K.dikey), ROZET_AN)):
+    # puset çizginin ucunda ilerler; S5 geçişinde pini kapatmasın diye 9.85'ten sonra yumuşakça solar
+    sol = yumusak(ara(t, 9.85, 10.05))
+    if sol < 1:
+        once = tuval.copy() if sol > 0 else None
+        _puset(tuval, M, z, D, t)
+        if sol > 0:
+            tuval[:] = karistir(tuval, once, sol)
+    # sayaç rozetleri: puset her evin önünden geçerken açılır
+    rb = 46 if K.dikey else 40
+    for i, (w, an) in enumerate(zip(_rozet_yerleri(K.dikey), _rozet_anlari())):
         if t > an:
             o = float(yay((t - an) / 0.5, 5.0, 1.6))
             rx, ry = nokta(M, [w])[0]
             yapistir(tuval, _rozet(str(i + 1), rb), rx, ry, alfa=min(1.0, (t - an) * 8), olcek=o * (0.75 + 0.25 * z))
-    if t > 9.10:                                         # üst etiket: "1 puset · 4 bebek"
-        o = float(yay((t - 9.10) / 0.5, 5.0, 1.4))
-        ex, ey = (K.cx, 300) if K.dikey else (K.cx - 560, 130)
-        yapistir(tuval, _rozet("1 puset · 4 bebek", 46 if K.dikey else 40), ex, ey + 3 * np.sin(1.4 * t), alfa=min(1.0, (t - 9.10) * 7), olcek=o)
-
-    # cam kart: "Defne · bir sokak ötede" (9.20'de açılır, geçişe kadar okunur)
-    a = cik(ara(t, Z.CAM_KART, Z.CAM_KART + 0.26))
-    if a > 0.01:
-        metin, boyut = "Defne · bir sokak ötede", 46
-        mw, asc, desc = yazi_olcu(metin, "nunito", boyut, 800)
-        av = 80
-        w, h = 28 + av + 22 + mw + 38, 120
-        cx = float(np.clip(px, 44 + w / 2, K.W - 44 - w / 2))
-        y1 = py - boy - 30 + (1 - a) * 26
-        y1 = max(y1, (150 if K.dikey else 60) + h)
-        x0, y0 = cx - w / 2, y1 - h
-        cam_kart(tuval, x0, y0, x0 + w, y1, r=36, alfa=a, opak=0.84)
-        yapistir(tuval, avatar(av, "b"), x0 + 28 + av / 2, y0 + h / 2, alfa=a)
-        yaz(tuval, metin, x0 + 28 + av + 22, y0 + h / 2 + asc * 0.36, "nunito", boyut, METIN, 800, alfa=a)
     return tuval

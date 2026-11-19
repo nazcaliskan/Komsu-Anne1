@@ -19,7 +19,7 @@ SON_BAS, SON_BIT = Z.S5_GECIS, Z.S5_GECIS + 0.32       # sahne söner
 UC_VARIS = Z.S5_GECIS + 0.35                            # çizginin ucu K.etk_giris'e varır
 
 TEN1, TEN2 = (249, 220, 200), (227, 170, 130)
-KOL1, KOL2 = (250, 166, 148), O.NIL                 # veren el yavruağzı, alan el nil yeşili
+KOL1, KOL2 = (255, 170, 186), O.NIL                 # veren el yavruağzı, alan el nil yeşili
 KRAFT_KOYU, KRAFT_ACIK, SAP = (170, 132, 94), (228, 196, 158), (150, 112, 78)
 YURU_BAS, YURU_SON = 10.90, 11.98
 DUSUS = 10.36                                        # tulum çantaya düşer
@@ -112,7 +112,7 @@ def _arka(t, Y, kay, hiz):
     kutu(600, gy - 150 * s, Dw - 740, gy - 120 * s, (255, 251, 246))
     g = O.bulanik(g, 3.2 if K.dikey else 2.4)
     # orta katman: A evi, B evi
-    kutu(-2600, 0, 620, gy, (255, 228, 216))                         # A evi: yavruağzı açık
+    kutu(-2600, 0, 620, gy, (255, 234, 238))                         # A evi: yavruağzı açık
     kutu(Dw - 760, 0, Dw + 2600, gy, (212, 240, 228))                # B evi: nil açık
     for wx in (620, Dw - 760):                                        # duvar köşelerinde ince gölge
         kutu(wx - 14, 0, wx + 14, gy, (150, 120, 100), alfa=0.16)
@@ -123,7 +123,7 @@ def _arka(t, Y, kay, hiz):
     kutu(-760, gy - 900 * s, -440, gy - 500 * s, (255, 246, 232), r=16)          # A penceresi
     kutu(-735, gy - 875 * s, -465, gy - 525 * s, (255, 232, 190), r=8)
     kutu(-735, gy - 875 * s, -465, gy - 820 * s, (150, 120, 90), r=8, alfa=0.18)  # pervaz gölgesi
-    for wx, kapi, pano in [(0, O.SOMON, (253, 160, 146)), (Dw, O.NIL, (128, 208, 180))]:
+    for wx, kapi, pano in [(0, (255, 196, 207), (255, 214, 222)), (Dw, O.NIL, (128, 208, 180))]:
         koyu = tuple(int(c * 0.80) for c in kapi)
         kutu(wx - 240, gy - 990 * s, wx + 240, gy, (255, 246, 236), r=22)        # söve
         kutu(wx - 200, gy - 950 * s, wx + 200, gy, kapi, r=12)
@@ -146,7 +146,7 @@ def _arka(t, Y, kay, hiz):
     O.pin(g, X(Dw - 400), (gy - 665 * s) * q, 116 * s * q, O.NIL, delik=(255, 250, 244))
     # zemin ve paspaslar; yakın katman derzleri daha hızlı akar
     O.kutu(g, 0, gy * q, w, h, 0, (238, 217, 196))
-    for wx, renk in [(0, (240, 150, 130)), (Dw, (70, 170, 138))]:
+    for wx, renk in [(0, (244, 170, 184)), (Dw, (70, 170, 138))]:
         kutu(wx - 250, gy + 26 * s, wx + 250, gy + 120 * s, renk, r=18)
         kutu(wx - 250, gy + 100 * s, wx + 250, gy + 128 * s, (120, 90, 70), r=14, alfa=0.22)
     for i in range(-6, 40):
@@ -361,7 +361,7 @@ def _bildirim(tuval, t, Y):
         return
     alfa = O.ara(t, Z.BILDIRIM, Z.BILDIRIM + 0.12)
     if K.dikey:                                                       # iki satır: üstte ikon + ad + saat, altta büyük mesaj
-        x0, x1, yuk, pt, ik = 54, 1026, 252, 62, 70
+        x0, x1, yuk, pt, ik = 54, 1026, 252, 66, 70
         y0 = O.kar(-yuk - 40, 132, O.geri(p, 1.3)) + 3 * np.sin(t * 1.7)
         O.cam_kart(tuval, x0, y0, x1, y0 + yuk, r=44, alfa=alfa, opak=0.88)
         O.yapistir(tuval, O.marka("ikon", ik), x0 + 40 + ik / 2, y0 + 70, alfa=alfa)
@@ -375,12 +375,11 @@ def _bildirim(tuval, t, Y):
         O.yapistir(tuval, O.marka("ikon", ik), x0 + 30 + ik / 2, y0 + yuk / 2, alfa=alfa)
         tx, ty = x0 + 30 + ik + 24, y0 + yuk * 0.74
         O.yaz(tuval, "Annea · şimdi", tx, y0 + yuk * 0.36, "nunito", 23, O.METIN2, 700, alfa)
-    w = O.yaz(tuval, "Aslı:", tx, ty, "nunito", pt, O.METIN, 900, alfa)
-    O.yaz(tuval, " Çok yakıştı, teşekkürler!", tx + w, ty, "nunito", pt, O.METIN, 600, alfa)
+    O.yaz(tuval, "Çok yakıştı, teşekkürler!", tx, ty, "nunito", pt, O.METIN, 700, alfa)
 
 
 # ------------------------------------------------------------------ çizgi (yalnız ortak.cizgi)
-PARLAK = (255, 190, 176)
+PARLAK = (255, 200, 210)
 
 
 def _kurdele_ciz(tuval, yol, kal, parlama=0.5):
