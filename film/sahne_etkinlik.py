@@ -10,13 +10,12 @@ T0, T_SON = Z.ETK_BAS, Z.ONERI_BAS
 BITIS = T_SON - 0.03                     # 20.37: bundan sonra ekranda yalnız çizgi
 
 try:
-    _k = json.load(open(f"{O.KOK}/cikti/ses/kilit_lilyv3_2.json"))["satirlar"]
-    _w = {k["k"].lower(): k["bas"] for s in (_k[7], _k[8]) for k in s["kelimeler"]}
+    _k = json.load(open(f"{O.KOK}/cikti/ses/kilit_lilyv3_1.json"))["satirlar"]
+    _w = {k["k"].lower(): k["bas"] for s in _k if "Parkta" in s["metin"] or "arkadaş" in s["metin"] for k in s["kelimeler"]}
 except Exception:
     _w = {}
-T_KAHVE, T_OYUN, T_ATOLYE = _w.get("kahve", 14.73), _w.get("oyun", 15.68), _w.get("atölye", 16.26)
-T_COCUK, T_ARKADAS = _w.get("çocuklar", 18.22), _w.get("arkadaş", 18.77)
-T_BULSUN, T_SEN = _w.get("bulsun", 19.30), _w.get("sen", 19.72)
+T_KAHVE, T_OYUN, T_ATOLYE = _w.get("kahve", 14.72), _w.get("oyun", 15.68), _w.get("atölye", 16.26)
+T_COCUK, T_ARKADAS, T_BULSUN = _w.get("çocuğun", 17.40), _w.get("arkadaşını", 18.23), _w.get("bulsun", 18.69)
 
 M = 70                                   # arka plan payı (kamera kayması için)
 ISIK = np.array([10.0, 14.0])            # gölge yönü: ışık sol üstten
@@ -26,10 +25,10 @@ BAYRAK = [O.YAVRUAGZI, O.NIL_ACIK, O.BAL, O.SOMON, (255, 250, 240), O.NIL]
 
 def _yer(K):
     if K.dikey:
-        return dict(ortu=(540, 800), s=1.0, A=(96, 330), B=(984, 330), sark=95, n=9, by=(78, 98),
+        return dict(ortu=(540, 800), s=1.0, A=(96, 330), B=(984, 330), sark=95, n=7, by=(78, 98),
                     kart=(86, 1236), ks=1.0, agac=[(-20, 560, 1.0), (1100, 610, 0.9), (10, 1190, 1.1), (1090, 1160, 0.8)],
                     patika=[(-80, 500), (260, 450), (640, 250), (1160, 170)])
-    return dict(ortu=(590, 610), s=0.92, A=(120, 150), B=(1800, 150), sark=78, n=15, by=(74, 92),
+    return dict(ortu=(590, 610), s=0.92, A=(120, 150), B=(1800, 150), sark=78, n=11, by=(74, 92),
                 kart=(1120, 338), ks=0.8, agac=[(-10, 330, 1.0), (1090, 1000, 1.0), (1900, 560, 1.1), (60, 1010, 0.8)],
                 patika=[(-80, 880), (500, 990), (1200, 1010), (2000, 900)])
 
@@ -286,7 +285,8 @@ def _tabak():
 
 
 def _ayakkabi(renk=None, ic=None):
-    renk, ic = renk or O.YAVRUAGZI, ic or (226, 140, 122)
+    renk = renk or O.YAVRUAGZI
+    ic = ic or tuple(int(c * 0.86) for c in O.SOMON)
     k = O.bos_katman((150, 120))
     for x, aci in ((42, -8), (104, 8)):
         _el(k, x, 60, 27, 48, renk, aci=aci)
@@ -324,9 +324,9 @@ def _skuter(renk):
 
 def _boya():
     k = O.bos_katman((230, 190))
-    for i, renk in enumerate((O.SOMON, O.NIL, O.BAL, O.NIL_KOYU)):
+    for i, renk in enumerate((O.SOMON, O.NIL, O.BAL)):
         hr = _kalem(renk)
-        O.yapistir(k, hr, 112 + i * 4, 36 + i * 38, aci=-24 + i * 15)
+        O.yapistir(k, hr, 112 + i * 4, 48 + i * 44, aci=-20 + i * 18)
     return k
 
 
@@ -346,17 +346,15 @@ def _nesne(ad):
 # (ad, örtü merkezine göre x, y, açı, beliriş anı, ölçek)
 def _dizi():
     return [
-        ("bardak", -200, -150, 0, T_KAHVE, 1.0), ("bardak", -92, -196, 0, T_KAHVE + 0.10, 1.0),
-        ("termos", -210, -30, 24, T_KAHVE + 0.22, 1.0),
-        ("blok1", 120, -190, -12, T_OYUN, 1.0), ("blok2", 196, -150, 10, T_OYUN + 0.07, 1.0), ("blok3", 146, -110, 24, T_OYUN + 0.14, 1.0),
-        ("top", 250, -20, 0, T_OYUN + 0.20, 1.0), ("araba", 420, 70, 14, T_OYUN + 0.30, 1.0),
-        ("kagit", 40, 130, -10, T_ATOLYE, 1.0), ("boya", -150, 150, 0, T_ATOLYE + 0.08, 1.0), ("firildak", 210, 170, 0, T_ATOLYE + 0.18, 1.0),
-        # "çocuklar arkadaş bulsun": çocuk eşyaları ÇİFTLER hâlinde gelir (insan çizmeden)
-        ("skuter1", -448, -6, -8, T_COCUK, 1.0), ("skuter2", -372, 8, 7, T_COCUK + 0.08, 1.0),
-        ("ayakkabi", -262, 236, 14, T_COCUK + 0.16, 0.9), ("ayakkabi2", -138, 246, -10, T_COCUK + 0.24, 0.9),
-        ("oto1", -44, -26, 0, T_ARKADAS, 1.0), ("oto2", 66, -26, 180, T_ARKADAS + 0.08, 1.0),
-        ("top2", 340, -140, 0, T_ARKADAS + 0.18, 0.92),
-        ("bardak", -112, -78, 0, T_SEN, 1.0),                               # "sen de": üçüncü kahve
+        # örtüde üç küçük küme: kahve, oyun, atölye
+        ("bardak", -206, -150, 0, T_KAHVE, 1.0), ("bardak", -96, -192, 0, T_KAHVE + 0.10, 1.0),
+        ("termos", -186, -42, 20, T_KAHVE + 0.22, 1.0),
+        ("blok1", 126, -196, -12, T_OYUN, 1.0), ("blok2", 204, -156, 10, T_OYUN + 0.07, 1.0), ("blok3", 152, -112, 24, T_OYUN + 0.14, 1.0),
+        ("top", 236, -8, 0, T_OYUN + 0.22, 1.0),
+        ("kagit", 70, 150, -8, T_ATOLYE, 1.0), ("boya", -130, 168, 0, T_ATOLYE + 0.10, 1.0),
+        # "çocuğun da arkadaşını bulsun": örtünün yanındaki boş çimde yalnız iki çift
+        ("skuter1", -452, -6, -8, T_COCUK, 1.0), ("skuter2", -376, 8, 7, T_COCUK + 0.10, 1.0),
+        ("ayakkabi", 418, 0, 180, T_ARKADAS, 0.95), ("ayakkabi2", 418, 140, 0, T_ARKADAS + 0.10, 0.95),
     ]
 
 
@@ -437,7 +435,7 @@ def _bayraklar(tuval, t, K, Y):
             faz = dalga_t - u * 0.45
             if faz > 0:
                 acik += 26 * np.exp(-faz * 3.2) * np.sin(faz * 13)
-        faz2 = (t - T_BULSUN) - (1 - u) * 0.45                # "bulsun"da sağdan sola ikinci dalga
+        faz2 = (t - T_BULSUN) - (1 - u) * 0.30                # "bulsun"da sağdan sola ikinci dalga
         if faz2 > 0:
             acik += 22 * np.exp(-faz2 * 2.6) * np.sin(faz2 * 12)
         a = np.radians(egim + acik)
