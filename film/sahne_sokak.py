@@ -6,7 +6,7 @@ t >= 10.00 çizginin ucu = K.s5_giris (S5 ile uzun geçiş)."""
 import functools
 import numpy as np, cv2
 from ortak import *  # noqa: F401,F403
-from ortak import _yd_noktalar
+from ortak import _yd_noktalar, _maske, _birlestir
 
 ARALIK = (7.05, 10.25)
 
@@ -238,10 +238,10 @@ def _ev_ciz(dst, M, z, ev, f):
     cokgen(dst, np.array([sacak[0], sacak[1], m32, m01]), aydin)             # ışık alan yüz
     cokgen(dst, np.array([m01, m32, sacak[2], sacak[3]]), golgeli)           # gölgede kalan yüz
     kal = max(1.2, 1.7 * z)
-    for j in (1, 2, 3):                                                      # kiremit sıraları
-        k = j / 4
-        cizgi_ince(dst, np.array([sacak[0] + (m01 - sacak[0]) * k, sacak[1] + (m32 - sacak[1]) * k]), _ton(aydin, 0.93), kal, 0.75)
-        cizgi_ince(dst, np.array([m01 + (sacak[3] - m01) * k, m32 + (sacak[2] - m32) * k]), _ton(golgeli, 0.92), kal, 0.75)
+    if h > 10:                                                               # kiremit sıraları (yüz başına tek maske)
+        for p0, p1, q0, q1, renk in ((sacak[0], m01, sacak[1], m32, _ton(aydin, 0.93)), (m01, sacak[3], m32, sacak[2], _ton(golgeli, 0.92))):
+            mk, mx, my = _maske([np.array([p0 + (p1 - p0) * k, q0 + (q1 - q0) * k]) for k in (0.25, 0.5, 0.75)], kapali=False, kalinlik=kal)
+            _birlestir(dst, renk, mk * 0.75, mx, my)
     cizgi_ince(dst, np.array([m01, m32]), _ton(cati, 1.12), max(1.5, 2.6 * z), 0.9)   # mahya
     if (x0 * 3 + y0) % 3 == 0 and h > 20:                                    # baca
         c0 = sacak[0] + (sacak[1] - sacak[0]) * 0.70 + (sacak[3] - sacak[0]) * 0.22
