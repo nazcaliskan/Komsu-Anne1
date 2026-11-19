@@ -278,7 +278,12 @@ def efektler():
     koy(b, pin_sesi(0.7, 57), Z.YESIL_PIN, 1, 0.4)
     koy(b, supurge(0.26, 1200, 4800, 0.16), Z.CAM_KART, 1, 0.3)
     # S5: çanta, kurdele, el değiştirme, bildirim
-    koy(b, kagit(0.38, 0.24), Z.CANTA + 0.02, 1, -0.2)
+    for i, tk in enumerate(Z.KATLAMA):                         # tulumun katlanışı: yumuşak kumaş hışırtısı
+        koy(b, supurge(0.16, 700 + 150 * i, 2600, 0.13, q=0.9), tk, 1, (-0.2, 0.2, 0.0)[i])
+    koy(b, kagit(0.30, 0.24), Z.KATLAMA[-1] + 0.08, 1, 0)
+    for i, ta in enumerate(Z.ADIMLAR):                         # yürüyüş: yumuşak adımlar + kâğıt çıtırtısı
+        koy(b, suz(kick(0.30), 400), ta, 1, (-0.25, 0.25, -0.1)[i])
+        koy(b, kagit(0.12, 0.10), ta + 0.03, 1, 0)
     koy(b, supurge(Z.KURDELE_SON - Z.KURDELE_BAS, 1800, 7500, 0.20, q=2), Z.KURDELE_BAS, 1, 0)
     koy(b, tus(81, 0.3, 0.25), Z.KURDELE_SON, 1, 0)
     koy(b, kagit(0.42, 0.30), Z.EL_DEGISTIRME - 0.10, 1, 0)
