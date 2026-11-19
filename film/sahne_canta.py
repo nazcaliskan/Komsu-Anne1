@@ -156,7 +156,7 @@ def _arka(t, Y, kay, hiz):
     g = O.bulanik(g, (4.6 if K.dikey else 3.4))
     # sıva / zemin dokusu (kamerayla birlikte kayar), duvar-zemin birleşiminde ortam gölgesi, yönlü ışık
     f = g.astype(np.float32)
-    dk = _doku(h, w, 5.0, 5.0, 21) * 0.022 + _doku(h, w, 1.2, 1.2, 22) * 0.012
+    dk = _doku(h, w, 7.0, 7.0, 21) * 0.011 + _doku(h, w, 1.6, 1.6, 22) * 0.005
     f *= (1 + np.roll(dk, -int(kay * q) % w, 1))[..., None]
     yy = np.arange(h, dtype=np.float32)[:, None]
     ao = 0.20 * np.exp(-np.abs(yy - gy * q) / (34 * s * q)) * (yy <= gy * q) + 0.12 * np.exp(-np.abs(yy - gy * q) / (60 * s * q)) * (yy > gy * q)
@@ -197,7 +197,7 @@ def _canta(dikey):
     h, w = on.shape[:2]
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
     u, v = (xx - X0) / bw, (yy - Y0) / bh
-    m = 1 + _doku(h, w, 0.7, 7 * s, 31) * 0.030 + _doku(h, w, 16 * s, 16 * s, 32) * 0.030 + _doku(h, w, 0.6, 0.6, 33) * 0.018
+    m = 1 + _doku(h, w, 0.7, 7 * s, 31) * 0.020 + _doku(h, w, 16 * s, 16 * s, 32) * 0.018 + _doku(h, w, 0.6, 0.6, 33) * 0.010
     m *= 1.05 - 0.09 * u - 0.07 * np.clip(v, 0, 1) ** 2
     _carp(on, m)
     koyu, acik = (120, 86, 54), (255, 236, 206)
@@ -357,13 +357,13 @@ def _bildirim(tuval, t, Y):
         return
     alfa = O.ara(t, Z.BILDIRIM, Z.BILDIRIM + 0.12)
     if K.dikey:                                                       # iki satır: üstte ikon + ad + saat, altta büyük mesaj
-        x0, x1, yuk, pt, ik = 54, 1026, 246, 56, 70
+        x0, x1, yuk, pt, ik = 54, 1026, 252, 62, 70
         y0 = O.kar(-yuk - 40, 132, O.geri(p, 1.3)) + 3 * np.sin(t * 1.7)
         O.cam_kart(tuval, x0, y0, x1, y0 + yuk, r=44, alfa=alfa, opak=0.88)
         O.yapistir(tuval, O.marka("ikon", ik), x0 + 40 + ik / 2, y0 + 70, alfa=alfa)
         w = O.yaz(tuval, "Annea", x0 + 40 + ik + 18, y0 + 84, "nunito", 36, O.METIN, 800, alfa)
         O.yaz(tuval, "şimdi", x1 - 42, y0 + 84, "nunito", 32, O.METIN2, 600, alfa, hiza="sag")
-        tx, ty = x0 + 42, y0 + 190
+        tx, ty = x0 + 42, y0 + 196
     else:
         x0, x1, yuk, pt, ik = 1920 - 50 - 770, 1920 - 50, 150, 38, 80
         y0 = O.kar(-yuk - 40, 60, O.geri(p, 1.3)) + 3 * np.sin(t * 1.7)
@@ -439,7 +439,7 @@ def ciz(t, K, tuval):
                 a, b = max(kuyruk(u), i) - i, min(uc(u), i + 1) - i
                 return O.yol_parca(P, a, b) if b > a + 1e-4 else None
             if t > kb + 0.36:
-                return [P]
+                return [P] if i else []                # sarım bitti: yaklaşma parçası çekildi, bant kaldı
             L = [p for p in O.alt_zaman(f, t) if p is not None]
             return L if len(L) == 4 else ([f(t)] if f(t) is not None else [])
         arka_ekran, on_ekran = O.nokta(M, arka_y), O.nokta(M, on_y)

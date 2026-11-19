@@ -323,7 +323,7 @@ def ciz(t, K, tuval):
     # kapıya doğru itiş: yakınlaşma bulanıklığı (çizgi ve kart net kalır)
     guc = 0.11 * gir(ara(t, 9.72, 10.25), 1.6)
     if guc > 0.002:
-        tuval[:] = radyal_bulanik(tuval, s, guc, adim=6 + int(guc * 110))
+        tuval[:] = radyal_bulanik(tuval, s, guc, adim=6 + int(guc * 60))
 
     # mercan çizgi: t >= 7.60 (öncesinde noktayı birleştirici çizer)
     if t >= 7.60:
@@ -332,7 +332,7 @@ def ciz(t, K, tuval):
             return nokta(Mu, yol_parca(D["rota"], 0.0, max(_ilerleme(u), 0.0015)))
         kal = 13 * z
         if _ilerleme(t) < 1 or t < 10.0:
-            cizgi(tuval, alt_zaman(yol, t, 6), kal)
+            cizgi(tuval, alt_zaman(yol, t, 4), kal)
         else:
             cizgi(tuval, yol(t), kal)
 
