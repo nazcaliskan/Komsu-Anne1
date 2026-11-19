@@ -36,10 +36,10 @@ def _yer(dikey):
     son = (cx, cy - (DUGME_CY - UH / 2) * sf, sf)
     if dikey:
         return dict(c0=(540, 1010), s0=0.80, son=son, kart=(900, 236),
-                    kc=[(524, 884), (560, 1152), (530, 1420)], ka=[-1.6, 1.2, -0.8], yon=[-1, 1, -1],
+                    kc=[(522, 884), (548, 1152), (528, 1420)], ka=[-1.6, 1.2, -0.8], yon=[-1, 1, -1],
                     hos=(540, 992, 760, 176))
     return dict(c0=(600, 545), s0=0.536, son=son, kart=(860, 226),
-                kc=[(1385, 268), (1440, 540), (1395, 812)], ka=[-1.5, 1.0, -1.2], yon=[1, 1, 1],
+                kc=[(1360, 268), (1405, 540), (1368, 812)], ka=[-1.5, 1.0, -1.2], yon=[1, 1, 1],
                 hos=(1380, 500, 800, 186))
 
 
@@ -387,12 +387,12 @@ def ciz(t, K, tuval):
     # telefon: gölge + gövde (yükselirken dikey hareket bulanıklığı, kartlar kalkınca sığ alan derinliği)
     hare = _telefon_hare(t)
     hiz = abs(_poz(t, K)[1] - _poz(t - 1 / Z.FPS, K)[1])
-    kb = int(hiz * 0.5 / s)
+    kb = min(48, int(hiz * 0.5 / s))
     if kb >= 3:
         hare = cv2.blur(hare, (1, kb | 1))
     kalkis = max(yumusak(ara(t, tk, tk + KART_SURE)) for tk in Z.KARTLAR) * (1 - ara(t, Z.GRUP_GECIS, 4.78))
     if kalkis > 0.02:
-        hare = cv2.GaussianBlur(hare, (0, 0), 3.2 * kalkis / s)
+        hare = cv2.GaussianBlur(hare, (0, 0), 1.9 * kalkis / s)
     kose = nokta(Mg, [(PAY, PAY), (GW - PAY, PAY), (GW - PAY, GH - PAY), (PAY, GH - PAY)])
     cokgen(tuval, kose * 0.97 + kose.mean(0) * 0.03 + (0, 46 * s), (95, 62, 42), 0.24, bulanik=36 * s)
     donustur(tuval, hare, Mg)

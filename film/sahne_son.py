@@ -34,12 +34,13 @@ def _duzen(K):
     punto = 104 if d else 96
     aralik = 160 if d else 136
     taban = [870, 1030, 1190] if d else [424, 560, 696]
-    alt = 36 if d else 32
+    alt = 46 if d else 41
     R = aralik / 2
     en = [yazi_olcu(" ".join(s), "serif", punto)[0] for s in SATIR]
     ilk = [yazi_olcu(s[0] + " ", "serif", punto)[0] for s in SATIR]
     x0 = (K.W - max(en)) / 2
     xr = x0 + max(en)
+    cs, cg = x0 - 34, xr + 12                                         # çizginin sol / sağ dönüş hizası (yazıdan pay)
     u = [y + alt for y in taban]
     p0 = np.array(K.s6_bas, np.float32)
     solo = 138 * BIRIM * (1.5 if d else 1.6)
@@ -47,21 +48,21 @@ def _duzen(K):
     a = np.radians(np.linspace(-90, 90, 28))
     b = np.radians(np.linspace(-90, -270, 28))
     parcalar = [
-        bezier(p0, p0 + ((-70, 60) if d else (-10, 70)), (x0 - 80, u[0]), (x0, u[0]), 24),
-        np.array([(x0, u[0]), (xr, u[0])], np.float32),
-        np.stack([xr + R * np.cos(a), u[0] + R + R * np.sin(a)], 1),
-        np.array([(xr, u[1]), (x0, u[1])], np.float32),
-        np.stack([x0 + R * np.cos(b), u[1] + R + R * np.sin(b)], 1),
-        np.array([(x0, u[2]), (x0 + en[2], u[2])], np.float32),
+        bezier(p0, p0 + ((-60, 60) if d else (-10, 70)), (cs - 70, u[0]), (cs, u[0]), 24),
+        np.array([(cs, u[0]), (cg, u[0])], np.float32),
+        np.stack([cg + R * np.cos(a), u[0] + R + R * np.sin(a)], 1),
+        np.array([(cg, u[1]), (cs, u[1])], np.float32),
+        np.stack([cs + R * np.cos(b), u[1] + R + R * np.sin(b)], 1),
+        np.array([(cs, u[2]), (x0 + en[2], u[2])], np.float32),
         bezier((x0 + en[2], u[2]), (x0 + en[2] + 150, u[2]), G + (330, 150), G + (26, 0), 40),
     ]
     P = np.concatenate([np.asarray(p, np.float32) for p in parcalar])
     uz = np.concatenate([[0], np.cumsum([np.linalg.norm(np.diff(p, axis=0), axis=1).sum() + (np.linalg.norm(parcalar[i + 1][0] - p[-1]) if i + 1 < len(parcalar) else 0) for i, p in enumerate(parcalar)])])
     # çizgi ucunun zaman -> yay uzunluğu anahtarları: her kelime otururken altından geçer
     anahtar = [
-        (ARALIK[0], 0), (KB[0], uz[1]), (KB[1], uz[1] + ilk[0]), (KB[1] + 0.40, uz[2]),
-        (KB[2], uz[3]), (KB[3], uz[3] + (xr - x0 - en[1])), (KB[3] + 0.35, uz[4]),
-        (KB[4], uz[5]), (KB[5], uz[5] + ilk[2]), (KB[5] + 0.20, uz[6]), (TOPLAN, uz[7]),
+        (ARALIK[0], 0), (KB[0], uz[1]), (KB[1], uz[1] + ilk[0] + 34), (KB[1] + 0.40, uz[2]),
+        (KB[2], uz[3]), (KB[3], uz[3] + (xr - x0 - en[1]) + 12), (KB[3] + 0.35, uz[4]),
+        (KB[4], uz[5]), (KB[5], uz[5] + ilk[2] + 34), (KB[5] + 0.20, uz[6]), (TOPLAN, uz[7]),
     ]
     T, S = zip(*anahtar)
     assert all(np.diff(T) > 0) and all(np.diff(S) >= 0), anahtar
@@ -101,7 +102,7 @@ def _soz(t, K, tuval, M, s):
 # ------------------------------------------------------------------ S7 + S8
 def _kilit(t, K):
     """Yatay logo kilidinin merkezi ve ölçeği (S8'de yerini değiştirir)."""
-    e = gir_cik(ara(t, Z.KAPANIS_SLOGAN, Z.KAPANIS_SLOGAN + 0.65))
+    e = gir_cik(ara(t, Z.KAPANIS_SLOGAN, Z.KAPANIS_SLOGAN + 0.42))
     c0 = np.array(K.logo_merkez, np.float32)
     if K.dikey:
         return kar(c0, np.array((540, 640), np.float32), e), 1.0
@@ -179,7 +180,7 @@ def _kapanis(t, K, tuval, M, s):
     yb, yu = (1160, 1296) if d else (668, 778)
     bw, bh = (440, 108) if d else (400, 96)
     for i, (metin, y) in enumerate([("Annelik, birlikte", y1), ("daha kolay.", y2)]):
-        p = cik(ara(t, Z.KAPANIS_SLOGAN + 0.10 + i * 0.12, Z.KAPANIS_SLOGAN + 0.42 + i * 0.12))
+        p = cik(ara(t, Z.KAPANIS_SLOGAN + 0.22 + i * 0.10, Z.KAPANIS_SLOGAN + 0.52 + i * 0.10))
         if p > 0:
             q = nokta(M, [(cx, y + (1 - p) * 26)])[0]
             yaz(tuval, metin, q[0], q[1], "serif", punto, METIN, alfa=p, hiza="orta", olcek=s)
@@ -190,11 +191,11 @@ def _kapanis(t, K, tuval, M, s):
         a = cik(ara(p, 0, 0.5))
         golge(tuval, q[0] - bw / 2 * k, q[1] - bh / 2 * k, q[0] + bw / 2 * k, q[1] + bh / 2 * k, bh / 2 * k, bulanik=18, alfa=0.20 * a, dy=10, renk=(170, 70, 50))
         kutu(tuval, q[0] - bw / 2 * k, q[1] - bh / 2 * k, q[0] + bw / 2 * k, q[1] + bh / 2 * k, bh / 2 * k, MERCAN, a)
-        yaz(tuval, "Hemen katıl", q[0], q[1] + 15 * k, "karla", 46 if d else 42, BEYAZ, 700, alfa=a, hiza="orta", olcek=k)
+        yaz(tuval, "Hemen katıl", q[0], q[1] + 16 * k, "karla", 50 if d else 44, BEYAZ, 700, alfa=a, hiza="orta", olcek=k)
     p = cik(ara(t, Z.KAPANIS_BUTON + 0.12, Z.KAPANIS_BUTON + 0.40))
     if p > 0:
         q = nokta(M, [(cx, yu + (1 - p) * 16)])[0]
-        yaz(tuval, "annea.app", q[0], q[1], "karla", 48 if d else 44, METIN2, 500, alfa=p, hiza="orta", olcek=s, aralik=1)
+        yaz(tuval, "annea.app", q[0], q[1], "karla", 54 if d else 46, METIN2, 500, alfa=p, hiza="orta", olcek=s, aralik=1)
 
 
 def ciz(t, K, tuval):
