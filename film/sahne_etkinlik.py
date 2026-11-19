@@ -371,7 +371,7 @@ def _cizgi_yolu(t, K, Y):
         r0 = _yol_oran(P, i0)
         bas = O.gir_cik(O.ara(t, T0, T0 + 0.80))
         kuy = r0 * O.gir_cik(O.ara(t, T0 + 0.25, T0 + 0.95))
-        return O.yol_parca(P, kuy, max(bas, 0.004))
+        return O.yol_parca(P, kuy, bas)
     P = _cikis_yolu(t, K, Y)
     x = O.ara(t, Z.ETK_GECIS, BITIS - 0.02)
     ip_oran = _yol_oran(P, 63)
@@ -433,7 +433,7 @@ def _kart_taban():
     while O.yazi_olcu(bas, "nunito", boyut, 800)[0] > KW - 228 - 36 and boyut > 56:
         boyut -= 1
     O.yaz(k, bas, 228, 112, "nunito", boyut, O.METIN, 800)
-    O.yaz(k, "Beşiktaş · Abbasağa Parkı", 230, 176, "nunito", 39, O.METIN2, 700)
+    O.yaz(k, "Beşiktaş · mahalle parkı", 230, 176, "nunito", 39, O.METIN2, 700)
     for i, renk in enumerate((O.SEFTALI, O.LAVANTA, O.BAL, (127, 168, 142), O.MERCAN_ACIK)):
         _el(k, 66 + i * 36, 268, 27, 27, O.BEYAZ)
         _el(k, 66 + i * 36, 268, 23, 23, renk)
