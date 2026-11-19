@@ -66,20 +66,20 @@ ISLIK = [(0, 81, 1.5), (1.5, 84, 0.5), (2, 86, 1), (3, 84, 1), (4, 81, 1.5), (5.
 def muzik():
     kuru = np.zeros((N, 2)); davul = np.zeros((N, 2)); alt = np.zeros((N, 2)); yastik = np.zeros((N, 2))
     kickler = []
-    for b in range(8):
+    for b in range(11):                     # ölçü 0–10: 0–26,4 sn
         t0 = b * O
-        bm, pd = AKOR[b]
+        bm, pd = AKOR[b % 8]
         # yastık (pad): alçak, sıcak
         p = pad(pd, O, 0.8 if b < 5 else 1.0) * (0.19 if b < 3 else 0.19)
         i = int(t0 * SR); yastik[i:i + len(p)] += p[: N - i]
         # kanca
         guc = 0.56 + (0.04 if b >= 3 else 0) + (0.05 if b >= 5 else 0)
-        for k, m in enumerate(KANCA[b]):
+        for k, m in enumerate(KANCA[b % 8]):
             if m is None:
                 continue
             sal = 0.012 if k % 2 else 0.0                                   # hafif sallantı (swing)
             koy(kuru, cimbir(m, guc * (1.0 if k % 4 == 0 else 0.8) * rng.uniform(0.92, 1.05)), t0 + k * A16 + sal, 0.5, pan=0.3 * np.sin(k * 0.9))
-            if b >= 5:                                                      # yükselişte bir oktav üstten çiftlenir
+            if 5 <= b < 10:                                                 # yükselişte bir oktav üstten çiftlenir
                 koy(kuru, cimbir(m + 12, guc * 0.42), t0 + k * A16 + sal, 0.5, pan=-0.3 * np.sin(k * 0.9))
         # akor vuruşları: tersten (ve'lerde) parlak tuş
         if b >= 0:
@@ -109,7 +109,7 @@ def muzik():
                 koy(davul, shaker(0.18, 0.05), tk, 0.5, pan=-0.3)
             if b >= 5 and k % 2 == 1:
                 koy(davul, shaker(0.12, 0.03), tk + sal, 0.5, pan=0.4)       # tef hissi
-        if b in (2, 4, 7):                                                  # ölçü sonu küçük geçişler
+        if b in (2, 4, 7, 10):                                                  # ölçü sonu küçük geçişler
             for j, k in enumerate((13, 14, 15)):
                 koy(davul, rim(0.35 + 0.08 * j), t0 + k * A16, 0.5, pan=-0.2 + 0.2 * j)
     # etkinlik: ıslık ezgisi (ölçü 6–7)
@@ -119,10 +119,13 @@ def muzik():
     koy(kuru, supurge(1.0, 500, 8000, 0.10), 3 * O - 1.0, 1, 0)
     koy(kuru, supurge(1.1, 500, 9000, 0.12), 5 * O - 1.1, 1, 0); koy(kuru, can(89, 0.16), 5 * O, 1, 0.3)
     koy(kuru, supurge(0.8, 700, 9000, 0.09), 6 * O - 0.8, 1, 0); koy(kuru, can(93, 0.12), 6 * O, 1, -0.3)
-    # ölçü 8: söz — sadeleşir (yarı zamanlı), sıcak
-    t8 = 8 * O
-    for o, bm, pd in [(0, 34, [46, 53, 57, 62, 65]), (2, 36, [48, 55, 60, 64, 67]), (4, 38, [50, 57, 60, 65, 69])]:
-        dur = min(2 * V, Z.NEFES - (t8 + o * V))
+    # ölçü 11–13 (26,4–33,6): slogan ve söz — yarı zamanlı, sıcak; sonda yeniden toplanır
+    t8 = 11 * O
+    DIZI = [(0, 34, [46, 53, 57, 62, 65]), (4, 38, [50, 57, 60, 65, 69]), (6, 36, [48, 55, 60, 64, 67]),
+            (8, 43, [55, 58, 62, 65, 70]), (10, 36, [48, 53, 58, 62, 65]), (12, 41, [53, 57, 60, 65, 69])]
+    for n, (o, bm, pd) in enumerate(DIZI):
+        son_o = DIZI[n + 1][0] if n + 1 < len(DIZI) else 13
+        dur = min((son_o - o) * V, Z.NEFES - (t8 + o * V))
         if dur <= 0.1:
             continue
         p = pad(pd, max(0.2, dur - 0.4), 1.0) * 0.26
@@ -130,11 +133,21 @@ def muzik():
         koy(alt, bas(bm, dur * 0.95, 0.6), t8 + o * V, 0.6)
         for j, m in enumerate(pd):
             koy(kuru, tus(m + 12, dur * 0.8, 0.40), t8 + o * V + j * 0.03, 0.42, pan=(j - 2) * 0.2)
-        koy(davul, kick(0.7), t8 + o * V, 0.5); kickler.append(t8 + o * V)
-        koy(davul, siklatma(0.45), t8 + (o + 1) * V, 0.5, pan=0.2)
-    for k, m in enumerate([77, None, 81, None, 84, None, 81, None, 79, None, 84, None, 88, None, 86, None, 84, None, 81, None]):
-        if m is not None and t8 + k * A16 * 2 < Z.NEFES - 0.2:
-            koy(kuru, cimbir(m, 0.34), t8 + k * A16 * 2, 0.5, pan=0.25 * np.sin(k))
+        for v in range(int(son_o - o)):
+            tv_ = t8 + (o + v) * V
+            if tv_ >= Z.NEFES - 0.1:
+                break
+            if v % 2 == 0:
+                koy(davul, kick(0.7), tv_, 0.5); kickler.append(tv_)
+            else:
+                koy(davul, siklatma(0.45), tv_, 0.5, pan=0.2)
+            if o >= 8:                                                  # son ölçüde ritim yeniden toplanır
+                koy(davul, shaker(0.2, 0.04), tv_ + V / 2, 0.5, pan=-0.3)
+    EZGI8 = [77, None, 81, None, 84, None, 81, None, 79, None, 84, None, 88, None, 86, None, 84, None, 81, None,
+             77, None, 79, 81, None, 84, None, 86, None, 84, 81, None, 82, None, 86, None, 89, None, 86, 84, None, 88, 89, None, 93, None, 89, None]
+    for k, m in enumerate(EZGI8):
+        if m is not None and t8 + k * A16 < Z.NEFES - 0.25:
+            koy(kuru, cimbir(m, 0.34 if k < 28 else 0.42), t8 + k * A16, 0.5, pan=0.25 * np.sin(k))
     koy(kuru, supurge(0.9, 900, 9000, 0.10), Z.NEFES - 0.9, 1, 0)
     # kick'e bağlı hafif pompalama: yastık ve bas canlı nefes alır
     pompa = np.ones(N)

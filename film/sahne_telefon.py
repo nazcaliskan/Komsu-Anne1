@@ -119,7 +119,7 @@ def _alt_cubuk(im, etkin):
     cizgi_ince(im, [(0, 1556), (UW, 1556)], CIZGI_GRI, 2)
     for i in range(5):
         x = 78 + 156 * i
-        r = MERCAN if i == etkin else METIN3
+        r = SOMON if i == etkin else METIN3
         kutu(im, x - 18, 1592, x + 18, 1628, 11, None, cerceve=r, cerceve_kalinlik=4)
         if i == etkin:
             daire(im, x, 1610, 6, r)
@@ -142,7 +142,7 @@ def _soru_taban():
     yaz(im, "Durumu biraz anlatırsan yanıtlar daha isabetli olur.", 60, 484, "nunito", 25, METIN3, 600)
     x = 60
     for ad, sec in [("Uyku", True), ("Beslenme", False), ("Sağlık", False), ("Gelişim", False)]:
-        x += 14 + (_hap(im, x, 530, ad, 28, (91, 74, 153), (241, 236, 250), 60, cerceve=LAVANTA) if sec
+        x += 14 + (_hap(im, x, 530, ad, 28, NIL_KOYU, NIL_ACIK, 60, cerceve=NIL) if sec
                    else _hap(im, x, 530, ad, 28, METIN2, KREM2, 60))
     yaz(im, "Yakınındaki annelerden", 40, 730, "nunito", 36, METIN, 800)
     for x0, y0, x1, y1 in YUVA:                                   # yanıt bekleyen iskelet kartlar
@@ -166,21 +166,21 @@ def _grup_taban():
         x = 104 + 66 * i
         daire(im, x, 462, 47, BEYAZ)
         yapistir(im, avatar(84, tp), x, 462)
-    _hap(im, 104 + 66 * 6 - 30, 432, "+122", 28, (75, 119, 92), ADACAYI_ACIK, 60)
+    _hap(im, 104 + 66 * 6 - 30, 432, "+122", 28, NIL_KOYU, NIL_ACIK, 60)
     _kart_zemin(im, 30, 590, 750, 1296)
     yaz(im, "Grubun paylaşımlarını görmek ve", 60, 668, "nunito", 35, METIN, 600)
     yaz(im, "sohbete katılmak için gruba katıl.", 60, 716, "nunito", 35, METIN, 600)
     cizgi_ince(im, [(60, 770), (720, 770)], CIZGI_GRI, 2)
-    for i, (ad, zr, nr) in enumerate([("Paylaşımlar", MERCAN_ACIK, MERCAN), ("Grup sohbeti", ADACAYI_ACIK, ADACAYI),
-                                       ("Buluşmalar", (253, 243, 220), BAL)]):
+    for i, (ad, zr, nr) in enumerate([("Paylaşımlar", YAVRUAGZI_ACIK, SOMON), ("Grup sohbeti", NIL_ACIK, NIL),
+                                       ("Buluşmalar", YAVRUAGZI_ACIK, YAVRUAGZI)]):
         y = 842 + 92 * i
         daire(im, 94, y, 32, zr)
         daire(im, 94, y, 11, nr)
         yaz(im, ad, 148, y + 12, "nunito", 33, METIN, 700)
         cizgi_ince(im, [(690, y - 12), (702, y), (690, y + 12)], METIN3, 3.5)
     cizgi_ince(im, [(60, 1090), (720, 1090)], CIZGI_GRI, 2)
-    kutu(im, *DUGME, DUGME_H / 2, BEYAZ, cerceve=MERCAN, cerceve_kalinlik=3.5)
-    yaz(im, "Gruba katıl", UW / 2, DUGME_CY + 14, "nunito", 40, MERCAN, 800, hiza="orta")
+    kutu(im, *DUGME, DUGME_H / 2, BEYAZ, cerceve=SOMON, cerceve_kalinlik=3.5)
+    yaz(im, "Gruba katıl", UW / 2, DUGME_CY + 14, "nunito", 40, SOMON, 800, hiza="orta")
     yaz(im, "Kimse otomatik eklenmez; istediğin zaman ayrılırsın.", UW / 2, 1266, "nunito", 24, METIN3, 600, hiza="orta")
     _alt_cubuk(im, 3)
     return im
@@ -199,7 +199,7 @@ def _soru(t):
         x += yaz(im, Z.YAZI[:k], x, 386, "nunito", 44, METIN, 700)
     yaziyor = Z.YAZI_BAS <= t <= Z.YAZI_SON + 0.1
     if t >= 2.44 and (yaziyor or (t * 1.8) % 1 < 0.55):            # imleç
-        kutu(im, x + 4, 344, x + 8, 398, 2, MERCAN)
+        kutu(im, x + 4, 344, x + 8, 398, 2, SOMON)
     for i, tk in enumerate(Z.KARTLAR):                             # kalkan kartın yuvası boşalır
         a = ara(t, tk, tk + 0.10)
         if a > 0:
@@ -290,7 +290,7 @@ def _kart(i, w, h):
     kutu(k, 1, 1, w - 1, h - 1, 33, None, cerceve=CIZGI_GRI, cerceve_kalinlik=2)
     yapistir(k, avatar(128, tip), 96, h / 2)
     yaz(k, ad, 186, h / 2 - 22, "nunito", 43, METIN, 800)
-    _hap(k, w - 30, h / 2 - 64, ETIKET, 27, TUGLA, MERCAN_ACIK, 50, dolgu=20, sagdan=True)
+    _hap(k, w - 30, h / 2 - 64, ETIKET, 27, SOMON_KOYU, YAVRUAGZI_ACIK, 50, dolgu=20, sagdan=True)
     gen = yaz(k, cevap, 186, h / 2 + 52, "nunito", 40, METIN, 600)
     assert gen < w - 186 - 24, (cevap, gen)
     return k
@@ -303,7 +303,7 @@ def _hos_kart(w, h):
     kutu(k, 1, 1, w - 1, h - 1, 37, None, cerceve=CIZGI_GRI, cerceve_kalinlik=2)
     r = h * 0.29
     cx = 44 + r
-    daire(k, cx, h / 2, r, ADACAYI)
+    daire(k, cx, h / 2, r, NIL_KOYU)
     cizgi_ince(k, [(cx - r * 0.42, h / 2 + r * 0.02), (cx - r * 0.10, h / 2 + r * 0.34), (cx + r * 0.46, h / 2 - r * 0.30)], BEYAZ, r * 0.17)
     x = cx + r + 34
     yaz(k, "Hoş geldin!", x, h / 2 + 4, "nunito", 64, METIN, 900)
@@ -378,7 +378,7 @@ def _grup_kart(w, h):
         x = 46 + 54 + 84 * i
         daire(k, x, 242, 58, BEYAZ)
         yapistir(k, avatar(106, tp), x, 242)
-    _hap(k, 46 + 54 + 84 * 6 - 34, 206, "+122", 34, (75, 119, 92), ADACAYI_ACIK, 72, dolgu=26)
+    _hap(k, 46 + 54 + 84 * 6 - 34, 206, "+122", 34, NIL_KOYU, NIL_ACIK, 72, dolgu=26)
     return k
 
 
@@ -488,14 +488,14 @@ def ciz(t, K, tuval):
     # çizgi (t >= FIRLAMA'da birleştirici devralır; buton düz mercan kalır)
     if t >= Z.FIRLAMA:
         B = nokta(Mu, [(DUGME[0], DUGME[1]), (DUGME[2], DUGME[3])])
-        kutu(tuval, B[0][0], B[0][1], B[1][0], B[1][1], (B[1][1] - B[0][1]) / 2, MERCAN)
+        kutu(tuval, B[0][0], B[0][1], B[1][0], B[1][1], (B[1][1] - B[0][1]) / 2, SOMON)
     else:
         _cizgi_ciz(t, K, tuval, Mu)
     bas_h = np.sin(np.pi * ara(t, Z.DOKUNUS - 0.04, Z.DOKUNUS + 0.24)) ** 2
     if bas_h > 0.01:                                               # dokunuşta ekran hafifçe içe basılır
         bx, by = nokta(Mu, [(UW / 2 + 150, DUGME_CY + 6)])[0]
         a = np.linspace(0, 2 * np.pi, 40, endpoint=False)
-        _golge(tuval, np.stack([bx + 78 * s * np.cos(a), by + 62 * s * np.sin(a)], 1), (120, 44, 30), 0.26 * bas_h, 16 * s)
+        _golge(tuval, np.stack([bx + 78 * s * np.cos(a), by + 62 * s * np.sin(a)], 1), (140, 50, 40), 0.26 * bas_h, 16 * s)
     if t >= Z.DOLGU_BAS:
         _beyaz_yazi(tuval, Mu, kar(KAPAK0, KAPAK1, gir_cik(ara(t, Z.DOLGU_BAS, Z.DOLGU_SON))) + DUGME_H * 0.42)
 
@@ -526,7 +526,7 @@ def ciz(t, K, tuval):
     for j in range(3):
         h = ara(t, Z.DOKUNUS + 0.07 * j, Z.DOKUNUS + 0.07 * j + 0.62)
         if 0 < h < 1:
-            halka(tuval, dx, dy, s * (40 + 300 * cik(h, 2)), (1 - h) ** 1.5 * 0.85, MERCAN if j != 1 else BEYAZ, 5 * s)
+            halka(tuval, dx, dy, s * (40 + 300 * cik(h, 2)), (1 - h) ** 1.5 * 0.85, SOMON if j != 1 else BEYAZ, 5 * s)
 
     # yatay: grup başlığı sağdaki boşluğa, öne kalkmış kart olarak büyür
     if Y["grup"] is not None and t >= 4.86:

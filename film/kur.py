@@ -104,7 +104,7 @@ S45_BAS, S45_SON = 9.85, 10.20
 def kare(i, K, gren=True):
     t = i / Z.FPS
     tuval = O.zemin(t, K)
-    pin, tel, sokak, canta, etk, son = (sahne(a) for a in ("pin", "telefon", "sokak", "canta", "etkinlik", "son"))
+    pin, tel, sokak, canta, etk, oneri, son = (sahne(a) for a in ("pin", "telefon", "sokak", "canta", "etkinlik", "oneri", "son"))
     if icinde(pin, t):
         tuval = pin.ciz(t, K, tuval)
     if icinde(tel, t) and t < G_AC:
@@ -122,6 +122,8 @@ def kare(i, K, gren=True):
     tuval = gecis_s3_s4(t, K, tuval)
     if icinde(etk, t):
         tuval = etk.ciz(t, K, tuval)
+    if icinde(oneri, t):
+        tuval = oneri.ciz(t, K, tuval)
     if icinde(son, t):
         tuval = son.ciz(t, K, tuval)
     tuval = son_isleme(tuval)

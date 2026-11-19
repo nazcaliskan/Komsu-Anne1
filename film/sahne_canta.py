@@ -19,7 +19,7 @@ SON_BAS, SON_BIT = Z.S5_GECIS, Z.S5_GECIS + 0.32       # sahne söner
 UC_VARIS = Z.S5_GECIS + 0.35                            # çizginin ucu K.etk_giris'e varır
 
 TEN1, TEN2 = (249, 220, 200), (227, 170, 130)
-KOL1, KOL2 = (168, 150, 214), (122, 158, 136)       # lavanta, adaçayı
+KOL1, KOL2 = (250, 166, 148), O.NIL                 # veren el yavruağzı, alan el nil yeşili
 KRAFT_KOYU, KRAFT_ACIK, SAP = (170, 132, 94), (228, 196, 158), (150, 112, 78)
 YURU_BAS, YURU_SON = 10.90, 11.98
 DUSUS = 10.36                                        # tulum çantaya düşer
@@ -30,9 +30,9 @@ CIK_BAS, CIK_TEPE = 13.02, 13.50                     # tulum çantadan çıkar (
 @functools.lru_cache(maxsize=None)
 def _yer(dikey):
     K = O.DIKEY if dikey else O.YATAY
-    s = 1.0 if dikey else 0.68
+    s = 1.0 if dikey else 0.80                      # yatayda daha yakın çekim
     bw, bh = 490 * s, 560 * s
-    ust = 930 if dikey else 492                      # çanta ön yüzünün üst kenarı (dinlenme)
+    ust = 930 if dikey else 446                      # çanta ön yüzünün üst kenarı (dinlenme)
     return dict(K=K, s=s, bw=bw, bh=bh, bx=K.cx, ust=ust, pivot_y=ust - 120 * s, gy=ust + bh - 70 * s,
                 D=(2200 if dikey else 1750))
 
@@ -94,8 +94,8 @@ def _arka(t, Y, kay, hiz):
     Dw = D / s
     g[:] = (250, 240, 228)                                           # sokak aralığı: açık gök-duvar
     # uzak katman: ağaçlar, lamba, çit — daha bulanık (sığ alan derinliği)
-    for wx, boy, ton in [(700, 520, (176, 206, 186)), (980, 640, (154, 190, 168)), (1280, 560, (186, 212, 194)),
-                         (1560, 660, (160, 196, 174)), (1840, 540, (178, 208, 188))]:
+    for wx, boy, ton in [(700, 520, (150, 214, 190)), (980, 640, (110, 198, 168)), (1280, 560, (170, 224, 202)),
+                         (1560, 660, (120, 202, 174)), (1840, 540, (156, 216, 192))]:
         wx = wx * Dw / 2200
         O.kutu(g, X(wx - 12, .62), (gy - boy * s * .55) * q, X(wx + 12, .62), gy * q, 4, (176, 146, 120))
         for dx, dy, r in [(0, 0, 150), (-90, 60, 110), (95, 50, 115)]:
@@ -112,8 +112,8 @@ def _arka(t, Y, kay, hiz):
     kutu(600, gy - 150 * s, Dw - 740, gy - 120 * s, (255, 251, 246))
     g = O.bulanik(g, 3.2 if K.dikey else 2.4)
     # orta katman: A evi, B evi
-    kutu(-2600, 0, 620, gy, (246, 222, 200))
-    kutu(Dw - 760, 0, Dw + 2600, gy, (226, 234, 222))
+    kutu(-2600, 0, 620, gy, (255, 228, 216))                         # A evi: yavruağzı açık
+    kutu(Dw - 760, 0, Dw + 2600, gy, (212, 240, 228))                # B evi: nil açık
     for wx in (620, Dw - 760):                                        # duvar köşelerinde ince gölge
         kutu(wx - 14, 0, wx + 14, gy, (150, 120, 100), alfa=0.16)
     for i in range(1, 9):                                             # duvar derzleri
@@ -123,7 +123,7 @@ def _arka(t, Y, kay, hiz):
     kutu(-760, gy - 900 * s, -440, gy - 500 * s, (255, 246, 232), r=16)          # A penceresi
     kutu(-735, gy - 875 * s, -465, gy - 525 * s, (255, 232, 190), r=8)
     kutu(-735, gy - 875 * s, -465, gy - 820 * s, (150, 120, 90), r=8, alfa=0.18)  # pervaz gölgesi
-    for wx, kapi, pano in [(0, (233, 146, 120), (241, 172, 148)), (Dw, (122, 158, 136), (148, 180, 160))]:
+    for wx, kapi, pano in [(0, O.SOMON, (253, 160, 146)), (Dw, O.NIL, (128, 208, 180))]:
         koyu = tuple(int(c * 0.80) for c in kapi)
         kutu(wx - 240, gy - 990 * s, wx + 240, gy, (255, 246, 236), r=22)        # söve
         kutu(wx - 200, gy - 950 * s, wx + 200, gy, kapi, r=12)
@@ -141,12 +141,12 @@ def _arka(t, Y, kay, hiz):
     kutu(Dw + 330, gy - 880 * s, Dw + 640, gy - 500 * s, (255, 250, 240), r=16)  # B penceresi
     kutu(Dw + 355, gy - 855 * s, Dw + 615, gy - 525 * s, (255, 236, 198), r=8)
     kutu(Dw + 355, gy - 855 * s, Dw + 615, gy - 800 * s, (150, 120, 90), r=8, alfa=0.18)
-    O.daire(g, X(Dw + 8), (gy - 1077 * s) * q, 80 * s * q, (120, 110, 100), 0.20)  # levha gölgesi
-    O.daire(g, X(Dw), (gy - 1085 * s) * q, 78 * s * q, (255, 250, 244))           # B kapısının üstünde yeşil pin
-    O.pin(g, X(Dw), (gy - 1030 * s) * q, 116 * s * q, O.ADACAYI, delik=(255, 250, 244))
+    O.daire(g, X(Dw - 392), (gy - 712 * s) * q, 80 * s * q, (120, 110, 100), 0.20)  # levha gölgesi
+    O.daire(g, X(Dw - 400), (gy - 720 * s) * q, 78 * s * q, (255, 250, 244))     # B kapısının yanında yeşil pin (tulum ve bildirim örtmez)
+    O.pin(g, X(Dw - 400), (gy - 665 * s) * q, 116 * s * q, O.NIL, delik=(255, 250, 244))
     # zemin ve paspaslar; yakın katman derzleri daha hızlı akar
     O.kutu(g, 0, gy * q, w, h, 0, (238, 217, 196))
-    for wx, renk in [(0, (214, 160, 124)), (Dw, (150, 178, 158))]:
+    for wx, renk in [(0, (240, 150, 130)), (Dw, (70, 170, 138))]:
         kutu(wx - 250, gy + 26 * s, wx + 250, gy + 120 * s, renk, r=18)
         kutu(wx - 250, gy + 100 * s, wx + 250, gy + 128 * s, (120, 90, 70), r=14, alfa=0.22)
     for i in range(-6, 40):
@@ -240,7 +240,7 @@ def _tulum(Y, f1, f2):
     a = k[..., 3:].astype(np.float32) / 255                           # şekli çizgili kumaşla doldur
     y = (np.arange(h, dtype=np.float32) - oy) / (27 * s)
     serit = ((np.floor(y) % 2) == 1)[:, None, None]
-    renk = np.where(serit, np.array((132, 160, 142), np.float32), np.array(krem, np.float32)) * np.ones((1, w, 1), np.float32)
+    renk = np.where(serit, np.array((104, 196, 166), np.float32), np.array(krem, np.float32)) * np.ones((1, w, 1), np.float32)
     xx = (np.arange(w, dtype=np.float32) - ox) / (W / 2)              # kumaş dokusu + gövde hacmi (kenarlara doğru koyulaşır)
     m = (1 + _doku(h, w, 0.5, 0.5, 41) * 0.022 + _doku(h, w, 9 * s, 3 * s, 42) * 0.020) * (1.03 - 0.07 * np.clip(np.abs(xx[None, :] + 0.15), 0, 1.6) ** 2)
     k[..., :3] = np.clip(renk * m[..., None] * a + 0.5, 0, 255).astype(np.uint8)
@@ -270,10 +270,14 @@ def _tulum(Y, f1, f2):
 def _kol(tuval, K, tut, s, taraf, kol, ten, g):
     """Kadrajın yan kenarından giren, dirsekten hafif bükülü kol; sapları kavramış kapalı el.
     tut: elin tuttuğu nokta; taraf: -1 sol, +1 sağ; g: 0..1 giriş."""
-    tut = np.asarray(tut, np.float32) + np.array([taraf * 1150 * s, -150 * s], np.float32) * (1 - g)
-    dirsek = tut + np.array([taraf * (300 if K.dikey else 400), -(150 if K.dikey else 120)], np.float32) * s
-    kenar = (-200 if taraf < 0 else K.W + 200) + taraf * 1150 * s * (1 - g)
-    cikis = np.array([kenar, tut[1] - (520 if K.dikey else 330) * s], np.float32)
+    if K.dikey:                                       # yan kenardan girer
+        tut = np.asarray(tut, np.float32) + np.array([taraf * 1150 * s, -150 * s], np.float32) * (1 - g)
+        dirsek = tut + np.array([taraf * 300, -150], np.float32) * s
+        cikis = np.array([(-200 if taraf < 0 else K.W + 200) + taraf * 1150 * s * (1 - g), tut[1] - 520 * s], np.float32)
+    else:                                             # yatayda kısa kol: üst kenardan, yakından girer
+        tut = np.asarray(tut, np.float32) + np.array([taraf * 420 * s, -620 * s], np.float32) * (1 - g)
+        dirsek = tut + np.array([taraf * 210, -190], np.float32) * s
+        cikis = np.array([tut[0] + taraf * 470 * s, min(-160.0, tut[1] - 700 * s)], np.float32)
     yon = dirsek - tut; yon /= np.linalg.norm(yon)
     dik = np.array([-yon[1], yon[0]], np.float32)
     kat = O.bos_katman(K)
@@ -291,7 +295,7 @@ def _kol(tuval, K, tut, s, taraf, kol, ten, g):
     O.cokgen(kat, _elips(b[0], b[1], 34 * s, 20 * s, -aci - 0.5 * taraf), ten)
     O.cizgi_ince(kat, _elips(b[0], b[1], 34 * s, 20 * s, -aci - 0.5 * taraf)[8:26], koyu, 2.6 * s, 0.6)
     x0, x1 = max(0, int(min(tut[0], cikis[0]) - 160 * s)), min(K.W, int(max(tut[0], cikis[0]) + 160 * s))
-    y0, y1 = max(0, int(cikis[1] - 140 * s)), min(K.H, int(tut[1] + 140 * s))
+    y0, y1 = max(0, int(min(cikis[1], dirsek[1]) - 140 * s)), min(K.H, int(tut[1] + 140 * s))
     if x1 <= x0 or y1 <= y0:
         return
     kes = np.ascontiguousarray(kat[y0:y1, x0:x1])
@@ -376,7 +380,7 @@ def _bildirim(tuval, t, Y):
 
 
 # ------------------------------------------------------------------ çizgi (yalnız ortak.cizgi)
-PARLAK = (250, 168, 148)
+PARLAK = (255, 190, 176)
 
 
 def _kurdele_ciz(tuval, yol, kal, parlama=0.5):
@@ -451,7 +455,7 @@ def ciz(t, K, tuval):
         f2 = O.gir_cik(O.ara(t, k2 - 0.02, k3 - 0.03)) - O.gir_cik(O.ara(t, CIK_BAS + 0.10, CIK_TEPE - 0.10))
         dus = O.gir(O.ara(t, k3 - 0.04, DUSUS), 2)
         if cik > 0.02:                                                 # arkasında sıcak ışık
-            c = O.nokta(M, [(-52 * s * cik, (36 - 150 * cik) * s)])[0]
+            c = O.nokta(M, [(-104 * s * cik, (36 - 110 * cik) * s)])[0]
             O.cokgen(tuval, _elips(c[0], c[1], 300 * s, 300 * s), (255, 240, 206), 0.42 * cik * (0.9 + 0.1 * np.sin(t * 5)), bulanik=60 * s)
 
         L = parca(2, arka_ekran)                                       # arka yarı: çantanın ARKASINDA
@@ -465,7 +469,7 @@ def ciz(t, K, tuval):
             ta = 5 * np.sin(t * 2.4) * (1 - dus) + 2.0 * yay_sal(f1) - 2.0 * yay_sal(f2)
             O.donustur(tuval, hr, O.afin(1 + 0.05 * np.sin(np.pi * f1) + 0.05 * np.sin(np.pi * f2), ta, capa, (hx, hy)))
         else:
-            yer = O.nokta(M, [(-52 * s * cik, (36 - 330 * cik) * s + 5 * s * np.sin(t * 3.1) * cik)])[0]
+            yer = O.nokta(M, [(-104 * s * cik, (36 - 250 * cik) * s + 5 * s * np.sin(t * 3.1) * cik)])[0]   # sola ve alçakta: el önünü kapatmaz
             O.donustur(tuval, hr, O.afin(1 + 0.04 * cik, aci + (-5 + 2.5 * np.sin(t * 2.3)) * cik, capa, yer))
         O.donustur(tuval, c_on, Ms)
         if t < kb:                                                     # devir: K.s5_giris'te nokta, sonra kısa kıpırtı
