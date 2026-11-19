@@ -103,7 +103,7 @@ def ciz(t, K, tuval):
     M, olcek, f = _kamera(t, K)
     soluk = 1 - yumusak(ara(t, 1.72, 2.55))
     uc = nokta(M, [_capa(K)])[0]
-    boy = (176 if K.dikey else 140)
+    boy = (212 if K.dikey else 168)
     if soluk > 0.004:
         kat = bos_katman(K)
         donustur(kat, _harita(K.W, K.H, *_capa(K)), M)
