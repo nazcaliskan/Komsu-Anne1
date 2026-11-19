@@ -29,10 +29,10 @@ FIGUR = {
 
 def _duzen(K):
     if K.dikey:
-        return dict(s=1.0, cxL=235, cxR=845, sy=900, gL=(478, 985), gR=(602, 985),
+        return dict(s=1.0, cxL=235, cxR=845, sy=900, gL=(478, 1130), gR=(602, 1130),
                     kapi=(290, 360, 790, 1580), yer=1580, saksi=(945, 1580), lamba=(140, 540), plaka=(880, 700),
                     kart=(70, 170, 1010, 330))
-    return dict(s=0.72, cxL=700, cxR=1220, sy=470, gL=(912, 548), gR=(1008, 548),
+    return dict(s=0.85, cxL=662, cxR=1258, sy=505, gL=(905, 700), gR=(1015, 700),
                 kapi=(720, 70, 1200, 1400), yer=1400, saksi=(1640, 1060), lamba=(330, 300), plaka=(1300, 400),
                 kart=(990, 64, 1850, 212))
 
@@ -370,11 +370,11 @@ def ciz(t, K, tuval):
         for kim, cx, yon, sy, tut in (("sol", D["cxL"], +1, syL, tutL), ("sag", D["cxR"], -1, syR, tutR)):
             v = FIGUR[kim]
             ic_omuz, dis_omuz = (cx + yon * 152 * s, sy + 74 * s), (cx - yon * 156 * s, sy + 74 * s)
-            ic_dur = np.array((cx + yon * 215 * s, sy + 290 * s + 5 * np.sin(1.4 * t + yon)), np.float32)
+            ic_dur = np.array((cx + yon * 225 * s, sy + 330 * s + 5 * np.sin(1.4 * t + yon)), np.float32)
             dis_el = np.array((cx - yon * 172 * s, sy + 478 * s + 3 * np.sin(1.2 * t)), np.float32)
-            ic_el = ic_dur * (1 - tut) + (g + (0, 6 * s)) * tut
+            ic_el = ic_dur * (1 - tut) + (g + (-yon * 17 * s, 6 * s)) * tut
             _kol(tuval, T, zf, D, v, dis_omuz, dis_el, (-yon, 0.2))
-            _kol(tuval, T, zf, D, v, ic_omuz, ic_el, (-yon * 0.3, 1))
+            _kol(tuval, T, zf, D, v, ic_omuz, ic_el, (-yon, 0.35))
 
         _bildirim(tuval, t, K, D)
 
