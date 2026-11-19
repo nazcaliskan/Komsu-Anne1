@@ -453,7 +453,7 @@ def _cizgi_ciz(t, K, tuval, Mu):
 
 def _beyaz_yazi(tuval, Mu, uc_x):
     """Dolgunun geçtiği yerde buton yazısı beyaza döner (arayüz düzleminde, aynı perspektifle)."""
-    hr = yazi("Gruba katıl", "nunito", 40, BEYAZ, 800)
+    hr = yazi("Gruba katıl", "nunito", 40, METIN, 800)
     w, asc, _ = yazi_olcu("Gruba katıl", "nunito", 40, 800)
     sol, ust = UW / 2 - w / 2 - 4, DUGME_CY + 14 - asc - 4
     n = int(np.clip(uc_x - sol, 0, hr.shape[1]))
