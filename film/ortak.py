@@ -20,8 +20,8 @@ KREM2 = (245, 236, 228)     # #F5ECE4
 # Palet (kullanıcı kararı): nil yeşili (mint) + somon / yavruağzı. Logo da bu renklere çevrilir.
 SOMON = (250, 128, 114)         # #FA8072 çizgi, mercan pin, vurgu
 SOMON_KOYU = (214, 84, 70)      # #D65446 küçük vurgu yazıları
-YAVRUAGZI = (255, 184, 166)     # #FFB8A6
-YAVRUAGZI_ACIK = (255, 232, 224)
+YAVRUAGZI = (255, 166, 184)     # #FFA6B8 pembe yavruağzı
+YAVRUAGZI_ACIK = (255, 227, 233)   # #FFE3E9
 NIL = (92, 191, 158)            # #5CBF9E logo yeşili, yeşil pin
 NIL_KOYU = (47, 143, 114)       # #2F8F72 küçük yeşil yazılar
 NIL_ACIK = (223, 244, 235)      # #DFF4EB
