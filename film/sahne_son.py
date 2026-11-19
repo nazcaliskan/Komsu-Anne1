@@ -63,7 +63,7 @@ def _duzen(K):
         pA = sigdir("Bebeğin sosyal", 128, 0.82)
         satA = [(["Bebeğin", "sosyal"], 900), (["büyüsün."], 900 + round(pA * 1.22))]
         pB, pC, yB, yC = sigdir("Bizim mahallemiz vardı;", 96, 0.86), sigdir("onun Annea'sı var.", 132, 0.86), 1030, 1200
-        eo = 1.22
+        eo = 1.12
     else:
         pA = 136
         satA = [(["Bebeğin", "sosyal", "büyüsün."], 580)]
@@ -99,14 +99,14 @@ def _duzen(K):
     tt_ = np.linspace(0, 1, 30)[:, None]
     yay_ = np.concatenate([c1 + 6 - (c1 - c0 + 12) * tt_, uc_ + pC * 0.16 * 4 * tt_ * (1 - tt_)], 1).astype(np.float32)   # sağdan sola, ortası sarkık
     g0 = np.array(K.slogan_giris, np.float32)
-    sag = min(K.W - 36, max(konum["vardı;"][1], konum["var."][1], sx1) + 64)      # yazının sağından dolanma hizası
+    sag = min(K.W - 60, max(konum["vardı;"][1], konum["var."][1], sx1) + 64)      # yazının sağından dolanma hizası
     solo = 138 * BIRIM * (1.5 if d else 1.6)
     G = np.array(K.logo_merkez, np.float32) + ((DELIK[0] - 0.5) * solo, (DELIK[1] - 0.5) * solo)
     parcalar = [
         (egri([g0, (52, g0[1] + 130), (58, ya - pA * 0.5), (ax0 - 120, ua - 14), (ax0, ua)], 14) if d      # dikeyde yazının solundan dolanır
          else bezier(g0, g0 + (0, 140), (ax0 - 90, ua), (ax0, ua), 24)),
         np.array([(ax0, ua), (ax1, ua)], np.float32),
-        egri([(ax1, ua), ((ax0 + ax1) / 2, ua + pA * 0.55), (max(sx0 - 80, 40), ua - 20), (max(sx0 - 90, 34), gy + 90), (sx0, gy)], 14),
+        egri([(ax1, ua), ((ax0 + ax1) / 2, ua + pA * 0.55), (max(sx0 - 70, 64), ua - 20), (max(sx0 - 70, 60), gy + 90), (sx0, gy)], 14),
         np.array([(sx0, gy), (sx1, gy)], np.float32),
         egri([(sx1, gy), (sag - 14, gy + 16), (sag, (gy + uc_) / 2), (min(c1 + 100, sag), uc_ + 30), yay_[0]], 14),
         yay_,
