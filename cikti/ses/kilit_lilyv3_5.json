@@ -1,0 +1,270 @@
+{
+ "kayit": "lilyv3_5",
+ "satirlar": [
+  {
+   "metin": "Aklına takılan her şey…",
+   "bas": 0.5,
+   "son": 2.17,
+   "kelimeler": [
+    {
+     "k": "Aklına",
+     "bas": 0.5,
+     "kare": 30
+    },
+    {
+     "k": "takılan",
+     "bas": 0.922,
+     "kare": 55
+    },
+    {
+     "k": "her",
+     "bas": 1.47,
+     "kare": 88
+    },
+    {
+     "k": "şey",
+     "bas": 1.842,
+     "kare": 111
+    }
+   ]
+  },
+  {
+   "metin": "bir sokak ötede cevabını bulur.",
+   "bas": 2.67,
+   "son": 4.57,
+   "kelimeler": [
+    {
+     "k": "bir",
+     "bas": 2.67,
+     "kare": 160
+    },
+    {
+     "k": "sokak",
+     "bas": 2.859,
+     "kare": 172
+    },
+    {
+     "k": "ötede",
+     "bas": 3.236,
+     "kare": 194
+    },
+    {
+     "k": "cevabını",
+     "bas": 3.6,
+     "kare": 216
+    },
+    {
+     "k": "bulur",
+     "bas": 4.206,
+     "kare": 252
+    }
+   ]
+  },
+  {
+   "metin": "Tek dokunuş…",
+   "bas": 5.4,
+   "son": 6.21,
+   "kelimeler": [
+    {
+     "k": "Tek",
+     "bas": 5.4,
+     "kare": 324
+    },
+    {
+     "k": "dokunuş",
+     "bas": 5.557,
+     "kare": 333
+    }
+   ]
+  },
+  {
+   "metin": "ve mahallen yanında.",
+   "bas": 6.6,
+   "son": 7.75,
+   "kelimeler": [
+    {
+     "k": "ve",
+     "bas": 6.6,
+     "kare": 396
+    },
+    {
+     "k": "mahallen",
+     "bas": 6.789,
+     "kare": 407
+    },
+    {
+     "k": "yanında",
+     "bas": 7.338,
+     "kare": 440
+    }
+   ]
+  },
+  {
+   "metin": "Küçülen tulum dolapta durmasın;",
+   "bas": 9.55,
+   "son": 11.31,
+   "kelimeler": [
+    {
+     "k": "Küçülen",
+     "bas": 9.55,
+     "kare": 573
+    },
+    {
+     "k": "tulum",
+     "bas": 9.89,
+     "kare": 593
+    },
+    {
+     "k": "dolapta",
+     "bas": 10.256,
+     "kare": 615
+    },
+    {
+     "k": "durmasın",
+     "bas": 10.751,
+     "kare": 645
+    }
+   ]
+  },
+  {
+   "metin": "bir sokak ötede bir bebeği sarsın.",
+   "bas": 11.75,
+   "son": 13.83,
+   "kelimeler": [
+    {
+     "k": "bir",
+     "bas": 11.75,
+     "kare": 705
+    },
+    {
+     "k": "sokak",
+     "bas": 12.198,
+     "kare": 732
+    },
+    {
+     "k": "ötede",
+     "bas": 12.542,
+     "kare": 752
+    },
+    {
+     "k": "bir",
+     "bas": 12.854,
+     "kare": 771
+    },
+    {
+     "k": "bebeği",
+     "bas": 13.069,
+     "kare": 784
+    },
+    {
+     "k": "sarsın",
+     "bas": 13.462,
+     "kare": 808
+    }
+   ]
+  },
+  {
+   "metin": "Parkta kahve, oyun, atölye…",
+   "bas": 14.5,
+   "son": 16.77,
+   "kelimeler": [
+    {
+     "k": "Parkta",
+     "bas": 14.5,
+     "kare": 870
+    },
+    {
+     "k": "kahve",
+     "bas": 14.732,
+     "kare": 884
+    },
+    {
+     "k": "oyun",
+     "bas": 15.677,
+     "kare": 941
+    },
+    {
+     "k": "atölye",
+     "bas": 16.263,
+     "kare": 976
+    }
+   ]
+  },
+  {
+   "metin": "Etkinliğini kur, mahalle gelsin.",
+   "bas": 16.95,
+   "son": 19.04,
+   "kelimeler": [
+    {
+     "k": "Etkinliğini",
+     "bas": 16.95,
+     "kare": 1017
+    },
+    {
+     "k": "kur",
+     "bas": 17.544,
+     "kare": 1053
+    },
+    {
+     "k": "mahalle",
+     "bas": 17.934,
+     "kare": 1076
+    },
+    {
+     "k": "gelsin",
+     "bas": 18.548,
+     "kare": 1113
+    }
+   ]
+  },
+  {
+   "metin": "Anneden anneye, elden ele, gönülden gönüle.",
+   "bas": 19.25,
+   "son": 22.36,
+   "kelimeler": [
+    {
+     "k": "Anneden",
+     "bas": 19.25,
+     "kare": 1155
+    },
+    {
+     "k": "anneye",
+     "bas": 19.595,
+     "kare": 1176
+    },
+    {
+     "k": "elden",
+     "bas": 20.394,
+     "kare": 1224
+    },
+    {
+     "k": "ele",
+     "bas": 20.8,
+     "kare": 1248
+    },
+    {
+     "k": "gönülden",
+     "bas": 21.366,
+     "kare": 1282
+    },
+    {
+     "k": "gönüle",
+     "bas": 21.997,
+     "kare": 1320
+    }
+   ]
+  },
+  {
+   "metin": "Annea.",
+   "bas": 23.25,
+   "son": 23.76,
+   "kelimeler": [
+    {
+     "k": "Annea",
+     "bas": 23.25,
+     "kare": 1395
+    }
+   ]
+  }
+ ]
+}

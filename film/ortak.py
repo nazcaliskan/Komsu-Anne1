@@ -52,8 +52,9 @@ class Kadraj:
         self.dugme = (540, 1228, 760, 104) if d else (640, 742, 470, 66)   # t=6.60: "Gruba katıl" (cx, cy, en, boy)
         self.evA = (300, 1330) if d else (500, 760)            # t=7.20–7.60: açılan deliğin merkezi = A evi
         self.s5_giris = (540, 900) if d else (960, 520)        # t=10.00: çizgi ucu S4'ten S5'e geçer
-        self.s6_bas = (150, 760) if d else (480, 400)          # t=13.30: çizgi ucu S5'ten S6'ya geçer
-        self.logo_merkez = (540, 900) if d else (960, 500)     # t=16.50: çizgi burada toplanır; ikon merkezi
+        self.etk_giris = (200, 520) if d else (360, 330)       # t=14.20: çizgi ucu S5'ten etkinlik sahnesine geçer
+        self.s6_bas = (150, 760) if d else (480, 400)          # t=18.00: çizgi ucu etkinlik sahnesinden söz sahnesine geçer
+        self.logo_merkez = (540, 900) if d else (960, 500)     # t=21.30: çizgi burada toplanır; ikon merkezi
 
     def __repr__(self):
         return f"Kadraj({self.W}x{self.H})"
