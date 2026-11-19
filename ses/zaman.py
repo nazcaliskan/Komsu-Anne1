@@ -1,12 +1,12 @@
 """Filmin tek zaman çizelgesi. Ses ve görüntü aynı sabitleri kullanır.
 Tüm değerler saniye; kare = saniye * FPS."""
 FPS = 60
-SURE = 33.5
+SURE = 33.9
 BPM = 100
 VURUS = 60 / BPM          # 0.6 sn = 36 kare
 OLCU = 4 * VURUS          # 2.4 sn = 144 kare
 
-SAHNE = {"S1": 0.0, "S2": 1.6, "S3": 4.8, "S4": 7.2, "S5": 10.0, "ETK": 14.4, "ONERI": 19.3, "SLOGAN": 24.8, "LOGO": 30.2, "KART": 31.7}
+SAHNE = {"S1": 0.0, "S2": 1.6, "S3": 4.8, "S4": 7.2, "S5": 10.0, "ETK": 14.4, "ONERI": 19.3, "SLOGAN": 24.8, "LOGO": 30.6, "KART": 32.1}
 
 PIN_VURUS = 0.17
 TELEFON_OTUR = 2.40
@@ -39,13 +39,13 @@ ONERI_BAS = 19.30             # öneri + güven sahnesi; çizgi K.oneri_giris'te
 ONERI_GUVEN = 21.90           # "doğrulanmış anneler…": çizgi kalkan olur
 ONERI_GECIS = 24.45           # öneri sahnesi söner (24.45–24.80)
 SLOGAN_BAS = 24.80            # slogan sahnesi; çizgi K.slogan_giris'ten girer
-SOZ_BAS = 30.10               # (söz bölümü kaldırıldı) slogan burada söner
-NEFES = 30.20
-LOGO_VURUS = 30.50
-YESIL_YASLAN = 30.85
-YAZI_ACILIS = 31.05
-KAPANIS_SLOGAN = 31.70
-KAPANIS_BUTON = 32.10
+SOZ_BAS = 30.50               # (söz bölümü kaldırıldı) slogan burada söner
+NEFES = 30.60
+LOGO_VURUS = 30.90
+YESIL_YASLAN = 31.25
+YAZI_ACILIS = 31.45
+KAPANIS_SLOGAN = 32.10
+KAPANIS_BUTON = 32.50
 
 # Seslendirme: satırın ilk sesi bu ana oturur.
 VO_SATIR = [
@@ -61,5 +61,5 @@ VO_SATIR = [
     ("doğrulanmış anneler, için rahat etsin.", 21.90),
     ("Bebeğin sosyal büyüsün.", 25.05),
     ("Bizim mahallemiz vardı; onun Annea'sı var.", 26.85),
-    ("Annea.", 31.05),
+    ("Annea.", 31.45),
 ]

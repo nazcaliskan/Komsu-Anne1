@@ -154,7 +154,7 @@ def _ev(tuval, M, s, cx, gy, w, h, govde, cati, kapi, k, alfa):
 
 def _slogan(t, K, tuval, M, s):
     D = _duzen(K)
-    sol = {"A": 1 - yumusak(ara(t, A_SON, B[0] + 0.04)), "B": 1 - yumusak(ara(t, SON - 0.08, SON + 0.16))}
+    sol = {"A": 1 - yumusak(ara(t, A_SON, B[0] + 0.04)), "B": 1 - yumusak(ara(t, SON - 0.10, TOPLAN + 0.02))}
     for metin, x, y, renk, an, grup, punto in D["kelime"]:
         p = cik(ara(t, an, an + 12 / 60))
         a = p * sol[grup]
