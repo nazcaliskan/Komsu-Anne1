@@ -31,16 +31,20 @@ def _kamera(t, K):
 @functools.lru_cache(maxsize=2)
 def _duzen(K):
     d = K.dikey
-    punto = 104 if d else 96
-    aralik = 160 if d else 136
-    taban = [870, 1030, 1190] if d else [424, 560, 696]
-    alt = 46 if d else 41
+    # punto: dikeyde en uzun satır kare genişliğinin ~%82'si; yatayda üç satırlık blok kare yüksekliğinin ~%45'i
+    en104 = max(yazi_olcu(" ".join(s), "serif", 104)[0] for s in SATIR)
+    punto = int(104 * 0.82 * K.W / en104) if d else 128
+    aralik = round(punto * (1.5 if d else 1.42))
+    orta = 1060 if d else 590                                        # ikinci satırın taban çizgisi
+    taban = [orta - aralik, orta, orta + aralik]
+    alt = round(punto * 0.44)                                         # alt çizginin taban çizgisinden uzaklığı
     R = aralik / 2
+    rx = min(R, 44) if d else R                                       # dönüşlerin yatay yarıçapı (dikeyde kenara taşmasın)
     en = [yazi_olcu(" ".join(s), "serif", punto)[0] for s in SATIR]
     ilk = [yazi_olcu(s[0] + " ", "serif", punto)[0] for s in SATIR]
     x0 = (K.W - max(en)) / 2
     xr = x0 + max(en)
-    cs, cg = x0 - 34, xr + 12                                         # çizginin sol / sağ dönüş hizası (yazıdan pay)
+    cs, cg = (x0 - 20, xr + 8) if d else (x0 - 34, xr + 12)           # çizginin sol / sağ dönüş hizası (yazıdan pay)
     u = [y + alt for y in taban]
     p0 = np.array(K.s6_bas, np.float32)
     solo = 138 * BIRIM * (1.5 if d else 1.6)
@@ -50,30 +54,30 @@ def _duzen(K):
     parcalar = [
         bezier(p0, p0 + ((-60, 60) if d else (-10, 70)), (cs - 70, u[0]), (cs, u[0]), 24),
         np.array([(cs, u[0]), (cg, u[0])], np.float32),
-        np.stack([cg + R * np.cos(a), u[0] + R + R * np.sin(a)], 1),
+        np.stack([cg + rx * np.cos(a), u[0] + R + R * np.sin(a)], 1),
         np.array([(cg, u[1]), (cs, u[1])], np.float32),
-        np.stack([cs + R * np.cos(b), u[1] + R + R * np.sin(b)], 1),
+        np.stack([cs + rx * np.cos(b), u[1] + R + R * np.sin(b)], 1),
         np.array([(cs, u[2]), (x0 + en[2], u[2])], np.float32),
-        bezier((x0 + en[2], u[2]), (x0 + en[2] + 150, u[2]), G + (330, 150), G + (26, 0), 40),
+        bezier((x0 + en[2], u[2]), (x0 + en[2] + 80, u[2]), G + (300, 150), G + (26, 0), 40),
     ]
     P = np.concatenate([np.asarray(p, np.float32) for p in parcalar])
     uz = np.concatenate([[0], np.cumsum([np.linalg.norm(np.diff(p, axis=0), axis=1).sum() + (np.linalg.norm(parcalar[i + 1][0] - p[-1]) if i + 1 < len(parcalar) else 0) for i, p in enumerate(parcalar)])])
     # çizgi ucunun zaman -> yay uzunluğu anahtarları: her kelime otururken altından geçer
     anahtar = [
-        (ARALIK[0], 0), (KB[0], uz[1]), (KB[1], uz[1] + ilk[0] + 34), (KB[1] + 0.40, uz[2]),
-        (KB[2], uz[3]), (KB[3], uz[3] + (xr - x0 - en[1]) + 12), (KB[3] + 0.35, uz[4]),
-        (KB[4], uz[5]), (KB[5], uz[5] + ilk[2] + 34), (KB[5] + 0.20, uz[6]), (TOPLAN, uz[7]),
+        (ARALIK[0], 0), (KB[0], uz[1]), (KB[1], uz[1] + ilk[0] + (x0 - cs)), (KB[1] + 0.40, uz[2]),
+        (KB[2], uz[3]), (KB[3], uz[3] + (cg - x0 - en[1])), (KB[3] + 0.35, uz[4]),
+        (KB[4], uz[5]), (KB[5], uz[5] + ilk[2] + (x0 - cs)), (KB[5] + 0.20, uz[6]), (TOPLAN, uz[7]),
     ]
     T, S = zip(*anahtar)
     assert all(np.diff(T) > 0) and all(np.diff(S) >= 0), anahtar
     uc = PchipInterpolator(T, S)
     geri_cek = KB[5] - 0.05                                           # kuyruk bu andan sonra ucu yakalar
-    kuyruk = PchipInterpolator([ARALIK[0], geri_cek, TOPLAN], [0, 0, uz[7] - 44])
+    kuyruk = PchipInterpolator([ARALIK[0], KB[0] - 0.06, KB[0] + 0.10, geri_cek, TOPLAN], [0, 0, uz[1], uz[1], uz[7] - 44])
     kelime = []                                                       # (metin, x, taban, renk, an, satır)
     for i, s in enumerate(SATIR):
         kelime.append((s[0], x0, taban[i], MERCAN if s[0] == "gönülden" else METIN, KB[2 * i], i))
         kelime.append((s[1], x0 + ilk[i], taban[i], METIN, KB[2 * i + 1], i))
-    return dict(P=P, L=float(uz[7]), uc=uc, kuyruk=kuyruk, kelime=kelime, punto=punto, G=G, solo=solo)
+    return dict(P=P, L=float(uz[7]), uc=uc, kuyruk=kuyruk, kelime=kelime, punto=punto, G=G, solo=solo, kal=punto * 0.10)
 
 
 def _soz_yolu(u, K, D):
@@ -85,7 +89,7 @@ def _soz_yolu(u, K, D):
 
 def _soz(t, K, tuval, M, s):
     D = _duzen(K)
-    kal = (10 if K.dikey else 9) * s
+    kal = D["kal"] * s
     # yazı: ilk iki satır son kelimeden hemen sonra, son satır vuruştan önce solar
     son1 = 1 - yumusak(ara(t, KB[5] - 0.02, KB[5] + 0.30))
     son3 = 1 - yumusak(ara(t, KB[5] + 0.24, Z.LOGO_VURUS - 0.03))
@@ -93,7 +97,7 @@ def _soz(t, K, tuval, M, s):
         p = cik(ara(t, an, an + 10 / 60))
         a = p * (son3 if satir == 2 else son1)
         if a > 0.004:
-            q = nokta(M, [(x, y + (1 - p) * 24)])[0]
+            q = nokta(M, [(x, y + (1 - p) * 0.24 * D["punto"])])[0]
             yaz(tuval, metin, q[0], q[1], "serif", D["punto"], renk, alfa=a, olcek=s)
     if t < TOPLAN:
         cizgi(tuval, alt_zaman(lambda u: nokta(M, _soz_yolu(u, K, D)), t, 4, 0.6), kal)
@@ -167,7 +171,7 @@ def _logo(t, K, tuval, M, s):
         n = ara(t, TOPLAN, Z.LOGO_VURUS)
         yarim = kar(22, 3, yumusak(n)) * s
         sis = cik(ara(t, Z.LOGO_VURUS - 0.03, Z.LOGO_VURUS + 0.06))
-        kal = kar(10 if K.dikey else 9, 2 * 0.083 * D["solo"] * 1.25, sis) * s
+        kal = kar(D["kal"], 2 * 0.083 * D["solo"] * 1.25, sis) * s
         dy = 2.5 * np.sin((t - TOPLAN) * 9) * (1 - sis)
         cizgi(tuval, np.array([(Gq[0] - yarim + 13 * s, Gq[1] + dy), (Gq[0] + yarim + 13 * s * (1 - yumusak(n)), Gq[1] + dy)]), kal,
               alfa=1 - ara(t, Z.LOGO_VURUS + 0.05, Z.LOGO_VURUS + 0.14), parlama=1 + 0.8 * n * (1 - sis))
@@ -176,10 +180,10 @@ def _logo(t, K, tuval, M, s):
 def _kapanis(t, K, tuval, M, s):
     d = K.dikey
     cx = 540 if d else 1385
-    punto = 88 if d else 78
-    y1, y2 = (900, 1002) if d else (452, 544)
-    yb, yu = (1160, 1296) if d else (668, 778)
-    bw, bh = (440, 108) if d else (400, 96)
+    punto = 84 if d else 104
+    y1, y2 = (900, 1000) if d else (388, 510)
+    yb, yu = (1160, 1300) if d else (655, 786)
+    bw, bh = (480, 112) if d else (520, 126)
     for i, (metin, y) in enumerate([("Annelik, birlikte", y1), ("daha kolay.", y2)]):
         p = cik(ara(t, Z.KAPANIS_SLOGAN + 0.27 + i * 0.10, Z.KAPANIS_SLOGAN + 0.57 + i * 0.10))
         if p > 0:
@@ -192,11 +196,11 @@ def _kapanis(t, K, tuval, M, s):
         a = cik(ara(p, 0, 0.5))
         golge(tuval, q[0] - bw / 2 * k, q[1] - bh / 2 * k, q[0] + bw / 2 * k, q[1] + bh / 2 * k, bh / 2 * k, bulanik=18, alfa=0.20 * a, dy=10, renk=(170, 70, 50))
         kutu(tuval, q[0] - bw / 2 * k, q[1] - bh / 2 * k, q[0] + bw / 2 * k, q[1] + bh / 2 * k, bh / 2 * k, MERCAN, a)
-        yaz(tuval, "Hemen katıl", q[0], q[1] + 16 * k, "karla", 50 if d else 44, BEYAZ, 700, alfa=a, hiza="orta", olcek=k)
+        yaz(tuval, "Hemen katıl", q[0], q[1] + (16 if d else 20) * k, "karla", 48 if d else 58, BEYAZ, 700, alfa=a, hiza="orta", olcek=k)
     p = cik(ara(t, Z.KAPANIS_BUTON + 0.12, Z.KAPANIS_BUTON + 0.40))
     if p > 0:
         q = nokta(M, [(cx, yu + (1 - p) * 16)])[0]
-        yaz(tuval, "annea.app", q[0], q[1], "karla", 54 if d else 46, METIN2, 500, alfa=p, hiza="orta", olcek=s, aralik=1)
+        yaz(tuval, "annea.app", q[0], q[1], "karla", 46 if d else 60, METIN2, 500, alfa=p, hiza="orta", olcek=s, aralik=1)
 
 
 def ciz(t, K, tuval):
