@@ -14,7 +14,7 @@ def satirlar(a):
 if __name__ == "__main__":
     yer = [BAS[i+1] - BAS[i] for i in range(len(BAS) - 1)] + [1.7]
     print("yer     ", " ".join(f"{y:5.2f}" for y in yer))
-    for f in sorted(glob.glob("vo3/*.json")):
+    for f in sorted(glob.glob("vo4/*.json")):
         try: S = satirlar(json.load(open(f)))
         except ValueError: print(f, "metin eşleşmedi"); continue
         d = [b - a for a, b in S]

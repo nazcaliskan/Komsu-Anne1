@@ -66,7 +66,7 @@ ISLIK = [(0, 81, 1.5), (1.5, 84, 0.5), (2, 86, 1), (3, 84, 1), (4, 81, 1.5), (5.
 def muzik():
     kuru = np.zeros((N, 2)); davul = np.zeros((N, 2)); alt = np.zeros((N, 2)); yastik = np.zeros((N, 2))
     kickler = []
-    for b in range(11):                     # ölçü 0–10: 0–26,4 sn
+    for b in range(10):                     # ölçü 0–9: 0–24,0 sn
         t0 = b * O
         bm, pd = AKOR[b % 8]
         # yastık (pad): alçak, sıcak
@@ -79,7 +79,7 @@ def muzik():
                 continue
             sal = 0.012 if k % 2 else 0.0                                   # hafif sallantı (swing)
             koy(kuru, cimbir(m, guc * (1.0 if k % 4 == 0 else 0.8) * rng.uniform(0.92, 1.05)), t0 + k * A16 + sal, 0.5, pan=0.3 * np.sin(k * 0.9))
-            if 5 <= b < 10:                                                 # yükselişte bir oktav üstten çiftlenir
+            if 5 <= b < 9:                                                  # yükselişte bir oktav üstten çiftlenir
                 koy(kuru, cimbir(m + 12, guc * 0.42), t0 + k * A16 + sal, 0.5, pan=-0.3 * np.sin(k * 0.9))
         # akor vuruşları: tersten (ve'lerde) parlak tuş
         if b >= 0:
@@ -109,7 +109,7 @@ def muzik():
                 koy(davul, shaker(0.18, 0.05), tk, 0.5, pan=-0.3)
             if b >= 5 and k % 2 == 1:
                 koy(davul, shaker(0.12, 0.03), tk + sal, 0.5, pan=0.4)       # tef hissi
-        if b in (2, 4, 7, 10):                                                  # ölçü sonu küçük geçişler
+        if b in (2, 4, 7, 9):                                                  # ölçü sonu küçük geçişler
             for j, k in enumerate((13, 14, 15)):
                 koy(davul, rim(0.35 + 0.08 * j), t0 + k * A16, 0.5, pan=-0.2 + 0.2 * j)
     # etkinlik: ıslık ezgisi (ölçü 6–7)
@@ -120,7 +120,7 @@ def muzik():
     koy(kuru, supurge(1.1, 500, 9000, 0.12), 5 * O - 1.1, 1, 0); koy(kuru, can(89, 0.16), 5 * O, 1, 0.3)
     koy(kuru, supurge(0.8, 700, 9000, 0.09), 6 * O - 0.8, 1, 0); koy(kuru, can(93, 0.12), 6 * O, 1, -0.3)
     # ölçü 11–13 (26,4–33,6): slogan ve söz — yarı zamanlı, sıcak; sonda yeniden toplanır
-    t8 = 11 * O
+    t8 = 10 * O
     DIZI = [(0, 34, [46, 53, 57, 62, 65]), (4, 38, [50, 57, 60, 65, 69]), (6, 36, [48, 55, 60, 64, 67]),
             (8, 43, [55, 58, 62, 65, 70]), (10, 36, [48, 53, 58, 62, 65]), (12, 41, [53, 57, 60, 65, 69])]
     for n, (o, bm, pd) in enumerate(DIZI):

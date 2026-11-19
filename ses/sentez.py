@@ -299,7 +299,7 @@ def efektler():
     koy(b, dokunus() * 0.8, Z.ETK_DOKUNUS, 1, 0)
     koy(b, can(84, 0.2, 1.2), Z.ETK_DOKUNUS + 0.07, 1, -0.1); koy(b, can(91, 0.2, 1.5), Z.ETK_DOKUNUS + 0.19, 1, 0.1)
     koy(b, tik(2800, 0.3), Z.ETK_DOKUNUS + 0.30, 1, 0.2)
-    for i, tn in enumerate((18.22, 18.40, 18.77, 18.95, 19.72)):          # çocuk eşyaları çift çift konar
+    for i, tn in enumerate((17.40, 17.55, 18.23, 18.38)):          # çocuk eşyaları çift çift konar
         koy(b, tus((74, 77, 81, 84, 79)[i], 0.18, 0.18), tn, 1, (-0.4, 0.4, -0.2, 0.2, 0.0)[i])
     koy(b, supurge(0.5, 2600, 500, 0.16), Z.ETK_GECIS, 1, 0)
     # S4 eki: puset ve dört sayaç rozeti
@@ -307,7 +307,7 @@ def efektler():
     for i, tn in enumerate((8.45, 8.75, 9.05, 9.35)):
         koy(b, tik(2200 + 250 * i, 0.3) , tn, 1, -0.3 + 0.2 * i); koy(b, tus(76 + (0, 2, 4, 7)[i], 0.15, 0.16), tn, 1, -0.3 + 0.2 * i)
     # Öneri + güven: kartlar kalkar, yıldızlar dolar, kalkan çizilir, rozetler konar
-    for i, tn in enumerate((20.60, 21.06, 22.09)):
+    for i, tn in enumerate((19.60, 20.25, 20.63)):
         koy(b, supurge(0.28, 900 + 250 * i, 4200 + 600 * i, 0.24), tn - 0.02, 1, (-0.4, 0.0, 0.4)[i])
         koy(b, tus(72 + (0, 4, 7)[i], 0.22, 0.2), tn + 0.24, 1, (-0.4, 0.0, 0.4)[i])
         for k in range(5):
@@ -315,7 +315,7 @@ def efektler():
     koy(b, supurge(0.55, 1200, 6000, 0.18, q=2), Z.ONERI_GUVEN, 1, 0)
     koy(b, can(84, 0.2, 1.4), Z.ONERI_GUVEN + 0.5, 1, -0.1); koy(b, can(88, 0.2, 1.6), Z.ONERI_GUVEN + 0.62, 1, 0.1)
     for i in range(3):
-        koy(b, tik(2600, 0.3), 24.13 + 0.08 * i, 1, (-0.4, 0.0, 0.4)[i])
+        koy(b, tik(2600, 0.3), 22.63 + 0.08 * i, 1, (-0.4, 0.0, 0.4)[i])
     koy(b, supurge(0.5, 2600, 500, 0.16), Z.ONERI_GECIS, 1, 0)
     koy(b, supurge(0.4, 2400, 600, 0.12), Z.SOZ_BAS - 0.15, 1, 0)
     # S7-S8: yeşil pinin yaslanışı, yazı açılışı, kapanış

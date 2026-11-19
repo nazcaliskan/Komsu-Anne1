@@ -1,12 +1,12 @@
 """Filmin tek zaman çizelgesi. Ses ve görüntü aynı sabitleri kullanır.
 Tüm değerler saniye; kare = saniye * FPS."""
 FPS = 60
-SURE = 37.4
+SURE = 33.5
 BPM = 100
 VURUS = 60 / BPM          # 0.6 sn = 36 kare
 OLCU = 4 * VURUS          # 2.4 sn = 144 kare
 
-SAHNE = {"S1": 0.0, "S2": 1.6, "S3": 4.8, "S4": 7.2, "S5": 10.0, "ETK": 14.4, "ONERI": 20.4, "SLOGAN": 25.6, "SOZ": 30.5, "LOGO": 33.9, "KART": 35.45}
+SAHNE = {"S1": 0.0, "S2": 1.6, "S3": 4.8, "S4": 7.2, "S5": 10.0, "ETK": 14.4, "ONERI": 19.3, "SLOGAN": 24.8, "LOGO": 30.2, "KART": 31.7}
 
 PIN_VURUS = 0.17
 TELEFON_OTUR = 2.40
@@ -34,18 +34,18 @@ S6_GECIS = S5_GECIS
 ETK_BAS = 14.40               # etkinlik sahnesi (ölçü başı); çizgi K.etk_giris'ten girer
 ETK_KART = 14.70              # etkinlik kartı öne kalkar
 ETK_DOKUNUS = 16.80           # "Katılıyorum" dokunuşu (ölçü başı)
-ETK_GECIS = 20.00             # etkinlik sahnesi söner (20.00–20.40)
-ONERI_BAS = 20.40             # öneri + güven sahnesi; çizgi K.oneri_giris'ten girer
-ONERI_GUVEN = 23.00           # "Doğrulanmış anneler…": çizgi kalkan/onay işareti olur
-ONERI_GECIS = 25.20           # öneri sahnesi söner (25.20–25.60)
-SLOGAN_BAS = 25.60            # slogan sahnesi; çizgi K.slogan_giris'ten girer
-SOZ_BAS = 30.50               # slogan söner, söz satırları başlar
-NEFES = 33.90
-LOGO_VURUS = 34.15
-YESIL_YASLAN = 34.50
-YAZI_ACILIS = 34.75
-KAPANIS_SLOGAN = 35.45
-KAPANIS_BUTON = 35.85
+ETK_GECIS = 18.95             # etkinlik sahnesi söner (18.95–19.30)
+ONERI_BAS = 19.30             # öneri + güven sahnesi; çizgi K.oneri_giris'ten girer
+ONERI_GUVEN = 21.90           # "doğrulanmış anneler…": çizgi kalkan olur
+ONERI_GECIS = 24.45           # öneri sahnesi söner (24.45–24.80)
+SLOGAN_BAS = 24.80            # slogan sahnesi; çizgi K.slogan_giris'ten girer
+SOZ_BAS = 30.10               # (söz bölümü kaldırıldı) slogan burada söner
+NEFES = 30.20
+LOGO_VURUS = 30.50
+YESIL_YASLAN = 30.85
+YAZI_ACILIS = 31.05
+KAPANIS_SLOGAN = 31.70
+KAPANIS_BUTON = 32.10
 
 # Seslendirme: satırın ilk sesi bu ana oturur.
 VO_SATIR = [
@@ -53,15 +53,13 @@ VO_SATIR = [
     ("bir sokak ötede cevabını bulur.", 2.67),
     ("Tek dokunuş…", 5.40),
     ("ve mahallen yanında.", 6.60),
-    ("Bir puset, dört bebek.", 7.95),
     ("Küçülen tulum dolapta durmasın;", 9.65),
     ("bir sokak ötede bir bebeği sarsın.", 11.75),
-    ("Parkta kahve, oyun, atölye…", 14.50),
-    ("Etkinliğini kur; çocuklar arkadaş bulsun, sen de.", 16.95),
-    ("Kreş, doktor, pişik kremi…", 20.60),
-    ("Doğrulanmış anneler önersin, güvenle.", 23.00),
-    ("Bebeğin sosyal büyüsün.", 25.75),
-    ("Bizim mahallemiz vardı; onun Annea'sı var.", 27.40),
-    ("Anneden anneye, elden ele, gönülden gönüle.", 30.65),
-    ("Annea.", 34.75),
+    ("Parkta kahve, oyun, atölye kurulsun;", 14.50),
+    ("çocuğun da arkadaşını bulsun.", 17.40),
+    ("Kreşi, doktoru deneyen söylesin;", 19.60),
+    ("doğrulanmış anneler, için rahat etsin.", 21.90),
+    ("Bebeğin sosyal büyüsün.", 25.05),
+    ("Bizim mahallemiz vardı; onun Annea'sı var.", 26.85),
+    ("Annea.", 31.05),
 ]
