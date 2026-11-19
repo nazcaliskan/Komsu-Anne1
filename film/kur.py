@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ortak as O
 from ortak import Z
 
-SES = f"{O.KOK}/cikti/ses/annea_ses_lilyv3_5.wav"
+SES = f"{O.KOK}/cikti/ses/annea_ses_lilyv3_2.wav"
 TOPLAM = int(round(Z.SURE * Z.FPS))          # 1272 kare
 
 _mod = {}

@@ -18,10 +18,10 @@ def rms(x): return float(np.sqrt(np.mean(np.square(x)) + 1e-12))
 
 def vo_yukle(ad):
     wav = f"/tmp/vo_{ad}.wav"
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", f"vo2/{ad}.mp3", "-ar", str(SR), "-ac", "1", wav], check=True)
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", f"vo3/{ad}.mp3", "-ar", str(SR), "-ac", "1", wav], check=True)
     x, _ = sf.read(wav); os.remove(wav)
     x = signal.sosfilt(signal.butter(2, 85, "high", fs=SR, output="sos"), x)
-    return x, json.load(open(f"vo2/{ad}.json"))
+    return x, json.load(open(f"vo3/{ad}.json"))
 
 
 def duraklara_oturt(x, S_):

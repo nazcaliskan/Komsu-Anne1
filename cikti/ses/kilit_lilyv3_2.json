@@ -1,0 +1,425 @@
+{
+ "kayit": "lilyv3_2",
+ "satirlar": [
+  {
+   "metin": "Aklına takılan her şey…",
+   "bas": 0.5,
+   "son": 2.24,
+   "kelimeler": [
+    {
+     "k": "Aklına",
+     "bas": 0.5,
+     "kare": 30
+    },
+    {
+     "k": "takılan",
+     "bas": 0.919,
+     "kare": 55
+    },
+    {
+     "k": "her",
+     "bas": 1.547,
+     "kare": 93
+    },
+    {
+     "k": "şey",
+     "bas": 1.915,
+     "kare": 115
+    }
+   ]
+  },
+  {
+   "metin": "bir sokak ötede cevabını bulur.",
+   "bas": 2.67,
+   "son": 4.66,
+   "kelimeler": [
+    {
+     "k": "bir",
+     "bas": 2.67,
+     "kare": 160
+    },
+    {
+     "k": "sokak",
+     "bas": 2.86,
+     "kare": 172
+    },
+    {
+     "k": "ötede",
+     "bas": 3.239,
+     "kare": 194
+    },
+    {
+     "k": "cevabını",
+     "bas": 3.645,
+     "kare": 219
+    },
+    {
+     "k": "bulur",
+     "bas": 4.294,
+     "kare": 258
+    }
+   ]
+  },
+  {
+   "metin": "Tek dokunuş…",
+   "bas": 5.4,
+   "son": 6.27,
+   "kelimeler": [
+    {
+     "k": "Tek",
+     "bas": 5.4,
+     "kare": 324
+    },
+    {
+     "k": "dokunuş",
+     "bas": 5.549,
+     "kare": 333
+    }
+   ]
+  },
+  {
+   "metin": "ve mahallen yanında.",
+   "bas": 6.6,
+   "son": 7.89,
+   "kelimeler": [
+    {
+     "k": "ve",
+     "bas": 6.6,
+     "kare": 396
+    },
+    {
+     "k": "mahallen",
+     "bas": 6.809,
+     "kare": 409
+    },
+    {
+     "k": "yanında",
+     "bas": 7.425,
+     "kare": 446
+    }
+   ]
+  },
+  {
+   "metin": "Bir puset, dört bebek.",
+   "bas": 7.95,
+   "son": 9.48,
+   "kelimeler": [
+    {
+     "k": "Bir",
+     "bas": 7.95,
+     "kare": 477
+    },
+    {
+     "k": "puset",
+     "bas": 8.101,
+     "kare": 486
+    },
+    {
+     "k": "dört",
+     "bas": 8.842,
+     "kare": 531
+    },
+    {
+     "k": "bebek",
+     "bas": 9.092,
+     "kare": 546
+    }
+   ]
+  },
+  {
+   "metin": "Küçülen tulum dolapta durmasın;",
+   "bas": 9.65,
+   "son": 11.41,
+   "kelimeler": [
+    {
+     "k": "Küçülen",
+     "bas": 9.65,
+     "kare": 579
+    },
+    {
+     "k": "tulum",
+     "bas": 10.09,
+     "kare": 605
+    },
+    {
+     "k": "dolapta",
+     "bas": 10.461,
+     "kare": 628
+    },
+    {
+     "k": "durmasın",
+     "bas": 10.894,
+     "kare": 654
+    }
+   ]
+  },
+  {
+   "metin": "bir sokak ötede bir bebeği sarsın.",
+   "bas": 11.75,
+   "son": 13.92,
+   "kelimeler": [
+    {
+     "k": "bir",
+     "bas": 11.75,
+     "kare": 705
+    },
+    {
+     "k": "sokak",
+     "bas": 11.955,
+     "kare": 717
+    },
+    {
+     "k": "ötede",
+     "bas": 12.426,
+     "kare": 746
+    },
+    {
+     "k": "bir",
+     "bas": 12.774,
+     "kare": 766
+    },
+    {
+     "k": "bebeği",
+     "bas": 13.073,
+     "kare": 784
+    },
+    {
+     "k": "sarsın",
+     "bas": 13.429,
+     "kare": 806
+    }
+   ]
+  },
+  {
+   "metin": "Parkta kahve, oyun, atölye…",
+   "bas": 14.5,
+   "son": 16.77,
+   "kelimeler": [
+    {
+     "k": "Parkta",
+     "bas": 14.5,
+     "kare": 870
+    },
+    {
+     "k": "kahve",
+     "bas": 14.721,
+     "kare": 883
+    },
+    {
+     "k": "oyun",
+     "bas": 15.683,
+     "kare": 941
+    },
+    {
+     "k": "atölye",
+     "bas": 16.265,
+     "kare": 976
+    }
+   ]
+  },
+  {
+   "metin": "Etkinliğini kur; çocuklar arkadaş bulsun, sen de.",
+   "bas": 16.95,
+   "son": 20.06,
+   "kelimeler": [
+    {
+     "k": "Etkinliğini",
+     "bas": 16.95,
+     "kare": 1017
+    },
+    {
+     "k": "kur",
+     "bas": 17.652,
+     "kare": 1059
+    },
+    {
+     "k": "çocuklar",
+     "bas": 18.221,
+     "kare": 1093
+    },
+    {
+     "k": "arkadaş",
+     "bas": 18.766,
+     "kare": 1126
+    },
+    {
+     "k": "bulsun",
+     "bas": 19.298,
+     "kare": 1158
+    },
+    {
+     "k": "sen",
+     "bas": 19.719,
+     "kare": 1183
+    },
+    {
+     "k": "de",
+     "bas": 19.953,
+     "kare": 1197
+    }
+   ]
+  },
+  {
+   "metin": "Kreş, doktor, pişik kremi…",
+   "bas": 20.6,
+   "son": 22.78,
+   "kelimeler": [
+    {
+     "k": "Kreş",
+     "bas": 20.6,
+     "kare": 1236
+    },
+    {
+     "k": "doktor",
+     "bas": 21.056,
+     "kare": 1263
+    },
+    {
+     "k": "pişik",
+     "bas": 22.086,
+     "kare": 1325
+    },
+    {
+     "k": "kremi",
+     "bas": 22.428,
+     "kare": 1346
+    }
+   ]
+  },
+  {
+   "metin": "Doğrulanmış anneler önersin, güvenle.",
+   "bas": 23.0,
+   "son": 25.41,
+   "kelimeler": [
+    {
+     "k": "Doğrulanmış",
+     "bas": 23.0,
+     "kare": 1380
+    },
+    {
+     "k": "anneler",
+     "bas": 23.537,
+     "kare": 1412
+    },
+    {
+     "k": "önersin",
+     "bas": 24.133,
+     "kare": 1448
+    },
+    {
+     "k": "güvenle",
+     "bas": 24.814,
+     "kare": 1489
+    }
+   ]
+  },
+  {
+   "metin": "Bebeğin sosyal büyüsün.",
+   "bas": 25.75,
+   "son": 27.2,
+   "kelimeler": [
+    {
+     "k": "Bebeğin",
+     "bas": 25.75,
+     "kare": 1545
+    },
+    {
+     "k": "sosyal",
+     "bas": 26.185,
+     "kare": 1571
+    },
+    {
+     "k": "büyüsün",
+     "bas": 26.735,
+     "kare": 1604
+    }
+   ]
+  },
+  {
+   "metin": "Bizim mahallemiz vardı; onun Annea'sı var.",
+   "bas": 27.4,
+   "son": 30.48,
+   "kelimeler": [
+    {
+     "k": "Bizim",
+     "bas": 27.4,
+     "kare": 1644
+    },
+    {
+     "k": "mahallemiz",
+     "bas": 27.782,
+     "kare": 1667
+    },
+    {
+     "k": "vardı",
+     "bas": 28.373,
+     "kare": 1702
+    },
+    {
+     "k": "onun",
+     "bas": 29.256,
+     "kare": 1755
+    },
+    {
+     "k": "Annea'sı",
+     "bas": 29.61,
+     "kare": 1777
+    },
+    {
+     "k": "var",
+     "bas": 30.299,
+     "kare": 1818
+    }
+   ]
+  },
+  {
+   "metin": "Anneden anneye, elden ele, gönülden gönüle.",
+   "bas": 30.65,
+   "son": 33.89,
+   "kelimeler": [
+    {
+     "k": "Anneden",
+     "bas": 30.65,
+     "kare": 1839
+    },
+    {
+     "k": "anneye",
+     "bas": 31.019,
+     "kare": 1861
+    },
+    {
+     "k": "elden",
+     "bas": 31.666,
+     "kare": 1900
+    },
+    {
+     "k": "ele",
+     "bas": 32.18,
+     "kare": 1931
+    },
+    {
+     "k": "gönülden",
+     "bas": 32.792,
+     "kare": 1968
+    },
+    {
+     "k": "gönüle",
+     "bas": 33.531,
+     "kare": 2012
+    }
+   ]
+  },
+  {
+   "metin": "Annea.",
+   "bas": 34.75,
+   "son": 35.22,
+   "kelimeler": [
+    {
+     "k": "Annea",
+     "bas": 34.75,
+     "kare": 2085
+    }
+   ]
+  }
+ ]
+}

@@ -17,17 +17,24 @@ import zaman as Z  # noqa: E402
 # ------------------------------------------------------------------ renkler (RGB)
 KREM = (251, 246, 241)      # #FBF6F1 sahne zemini
 KREM2 = (245, 236, 228)     # #F5ECE4
-MERCAN = (232, 112, 90)     # #E8705A logo mercanı = çizgi
-MERCAN_ACIK = (253, 233, 226)
-ADACAYI = (95, 127, 106)    # #5F7F6A logo yeşili
-ADACAYI_ACIK = (230, 240, 233)
-TUGLA = (171, 58, 42)       # #AB3A2A küçük vurgu
+# Palet (kullanıcı kararı): nil yeşili (mint) + somon / yavruağzı. Logo da bu renklere çevrilir.
+SOMON = (250, 128, 114)         # #FA8072 çizgi, mercan pin, vurgu
+SOMON_KOYU = (214, 84, 70)      # #D65446 küçük vurgu yazıları
+YAVRUAGZI = (255, 184, 166)     # #FFB8A6
+YAVRUAGZI_ACIK = (255, 232, 224)
+NIL = (92, 191, 158)            # #5CBF9E logo yeşili, yeşil pin
+NIL_KOYU = (47, 143, 114)       # #2F8F72 küçük yeşil yazılar
+NIL_ACIK = (223, 244, 235)      # #DFF4EB
+# Eski adlar yeni palete bağlanır (sahne kodları bu adları kullanıyor).
+MERCAN, MERCAN_ACIK = SOMON, YAVRUAGZI_ACIK
+ADACAYI, ADACAYI_ACIK = NIL, NIL_ACIK
+TUGLA = SOMON_KOYU
 METIN = (59, 47, 42)        # #3B2F2A
 METIN2 = (122, 107, 99)     # #7A6B63
 METIN3 = (165, 150, 141)
 CIZGI_GRI = (239, 227, 216)  # #EFE3D8 arayüz çizgisi
 BEYAZ = (255, 255, 255)
-SEFTALI = (247, 201, 168)
+SEFTALI = YAVRUAGZI
 BAL = (233, 169, 58)
 LAVANTA = (143, 124, 199)
 KRAFT = (214, 176, 132)
@@ -53,8 +60,10 @@ class Kadraj:
         self.evA = (300, 1330) if d else (500, 760)            # t=7.20–7.60: açılan deliğin merkezi = A evi
         self.s5_giris = (540, 900) if d else (960, 520)        # t=10.00: çizgi ucu S4'ten S5'e geçer
         self.etk_giris = (200, 520) if d else (360, 330)       # t=14.20: çizgi ucu S5'ten etkinlik sahnesine geçer
-        self.s6_bas = (150, 760) if d else (480, 400)          # t=18.00: çizgi ucu etkinlik sahnesinden söz sahnesine geçer
-        self.logo_merkez = (540, 900) if d else (960, 500)     # t=21.30: çizgi burada toplanır; ikon merkezi
+        self.oneri_giris = (160, 560) if d else (300, 300)     # t=ONERI_BAS: çizgi ucu etkinlikten öneri sahnesine geçer
+        self.slogan_giris = (140, 700) if d else (420, 330)    # t=SLOGAN_BAS: çizgi ucu öneriden slogan sahnesine geçer
+        self.s6_bas = (150, 760) if d else (480, 400)          # söz satırlarının girişi (son sahnenin iç noktası)
+        self.logo_merkez = (540, 900) if d else (960, 500)     # t=NEFES: çizgi burada toplanır; ikon merkezi
 
     def __repr__(self):
         return f"Kadraj({self.W}x{self.H})"
@@ -364,13 +373,16 @@ def yaz(dst, metin, x, y, ad="karla", boyut=40, renk=METIN, agirlik=500, alfa=1.
 # ------------------------------------------------------------------ marka (resmî dosyalar)
 @functools.lru_cache(maxsize=None)
 def marka(ad, yukseklik):
-    """Resmî logo katmanı (ön çarpılmış). ad: 'ikon', 'ikon_mercan', 'ikon_yesil', 'yazi', 'yatay'.
+    """Resmî logo katmanı (ön çarpılmış); biçim resmî dosyadan, renkler yeni palete eşlenir (adaçayı→NIL, mercan→SOMON). ad: 'ikon', 'ikon_mercan', 'ikon_yesil', 'yazi', 'yatay'.
     Yalnızca ölçeklenir; ikon katmanları aynı 1024x1024 tuvali paylaşır (üst üste konunca resmî ikon).
     Yatay logoda oranlar: ikon 138 birim kare; yazı ikonun solundan 162, üstünden 14 birim içeride, 449x110."""
     im = cv2.imread(f"{KOK}/assets/marka/png/{ad}.png", cv2.IMREAD_UNCHANGED)
     im = cv2.cvtColor(im, cv2.COLOR_BGRA2RGBA)
     h, w = im.shape[:2]
     yeni = (max(1, int(round(w * yukseklik / h))), int(round(yukseklik)))
+    rgb = im[..., :3].astype(np.int32)
+    kirmizi = (rgb[..., 0] - rgb[..., 1]) > 40                      # mercan pikseller (R >> G); gerisi adaçayı
+    im[..., :3] = np.where(kirmizi[..., None], np.array(SOMON, np.uint8), np.array(NIL, np.uint8))
     return onceden_carp(cv2.resize(im, yeni, interpolation=cv2.INTER_AREA if yukseklik < h else cv2.INTER_CUBIC))
 
 
