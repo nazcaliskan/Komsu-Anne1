@@ -199,6 +199,12 @@ def _ton(renk, k):
     return tuple(float(np.clip(c * k, 0, 255)) for c in renk)
 
 
+def _yumusak_cokgen(dst, P, renk, alfa, sigma):
+    """Bulanık kenarlı çokgen; büyük sigmada maske küçültülerek bulanıklaştırılır (itiş karelerinde hız)."""
+    mk, x0, y0 = _maske([P], pay=3 + int(sigma * 3))
+    _birlestir(dst, renk, bulanik(mk, sigma) * alfa, x0, y0)
+
+
 def _ev_ciz(dst, M, z, ev, f):
     x0, y0, x1, y1, yuk, cati, oz = ev
     taban = nokta(M, [[x0, y0], [x1, y0], [x1, y1], [x0, y1]])
@@ -309,9 +315,9 @@ def _puset(dst, M, z, D, t):
     a = np.linspace(-np.pi / 2, np.pi / 2, 18)                                         # tente (yarım kubbe, kola yakın)
     tente = np.concatenate([[(-33, -22)], np.stack([2 + 13 * np.cos(a), 22 * np.sin(a)], 1), [(-33, 22)]])
     cokgen(dst, W(tente), SOMON)
-    cokgen(dst, W(np.concatenate([[(-33, 0)], np.stack([2 + 13 * np.cos(a[9:]), 22 * np.sin(a[9:])], 1), [(-33, 22)]])), (236, 108, 96), 0.55)
+    cokgen(dst, W(np.concatenate([[(-33, 0)], np.stack([2 + 13 * np.cos(a[9:]), 22 * np.sin(a[9:])], 1), [(-33, 22)]])), _ton(SOMON, 0.90), 0.75)
     for kx in (-20, -8):
-        cizgi_ince(dst, W([(kx, -21), (kx + 3, 0), (kx, 21)]), (232, 104, 92), max(1.2, 2.0 * z * olc), 0.8)
+        cizgi_ince(dst, W([(kx, -21), (kx + 3, 0), (kx, 21)]), _ton(SOMON, 0.86), max(1.2, 2.0 * z * olc), 0.8)
     cizgi_ince(dst, W(np.stack([2 + 13 * np.cos(a), 22 * np.sin(a)], 1)), YAVRUAGZI, max(1.5, 2.6 * z * olc), 0.95)
 
 
@@ -386,8 +392,8 @@ def ciz(t, K, tuval):
             k = np.array([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], np.float32)
             g = np.concatenate([k, k + (yuk * f * GUNES[0], yuk * f * GUNES[1])])
             hull = cv2.convexHull(nokta(M, g)).reshape(-1, 2)
-            cokgen(tuval, hull, GOLGE_RENK, 0.21, bulanik=6 * z)
-            cokgen(tuval, nokta(M, [[x0 - 9, y0 - 9], [x1 + 9, y0 - 9], [x1 + 9, y1 + 9], [x0 - 9, y1 + 9]]), GOLGE_RENK, 0.14 * min(1, f), bulanik=7 * z)
+            _yumusak_cokgen(tuval, hull, GOLGE_RENK, 0.21, 6 * z)
+            _yumusak_cokgen(tuval, nokta(M, [[x0 - 9, y0 - 9], [x1 + 9, y0 - 9], [x1 + 9, y1 + 9], [x0 - 9, y1 + 9]]), GOLGE_RENK, 0.14 * min(1, f), 7 * z)
     for _, ev, f in sorted(gorunen, key=lambda e: e[0]):
         _ev_ciz(tuval, M, z, ev, f)
 

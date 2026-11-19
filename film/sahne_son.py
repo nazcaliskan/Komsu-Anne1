@@ -67,11 +67,11 @@ def _duzen(K):
     if d:
         pA = sigdir("Bebeğin sosyal", 124, 0.80)
         satA = [(["Bebeğin", "sosyal"], 880), (["büyüsün."], 880 + round(pA * 1.22))]
-        pB, pC, yB, yC = sigdir("Bizim mahallemiz vardı;", 84, 0.80), sigdir("onun Annea'sı var.", 128, 0.84), 905, 1075
+        pB, pC, yB, yC = sigdir("Bizim mahallemiz vardı;", 92, 0.84), sigdir("onun Annea'sı var.", 128, 0.84), 905, 1080
     else:
         pA = 124
         satA = [(["Bebeğin", "sosyal", "büyüsün."], 570)]
-        pB, pC, yB, yC = 86, 140, 470, 650
+        pB, pC, yB, yC = 106, 170, 450, 670
     skel = []                                                         # (metin, x, taban, renk, an, grup, punto)
     ai = 0
     for kel, y in satA:
@@ -90,8 +90,9 @@ def _duzen(K):
             skel.append((w, x, y, renk, an, "BC", pp))
             konum[w] = (x, x + yazi_olcu(w, "serif", pp)[0])
             x += yazi_olcu(w + " ", "serif", pp)[0]
+    sol_ = min(konum["Bizim"][0], konum["onun"][0])                  # iki satırın sol kenarı
     m0, m1 = konum["mahallemiz"]
-    rb, rt = yB - pB * 0.86, yB - pB * 1.30                           # çatıların tabanı ve tepesi
+    rb, rt = yB - pB * 1.00, yB - pB * 1.44                           # çatıların tabanı ve tepesi
     cati = np.array([(m0 + (m1 - m0) * i / 6, rb if i % 2 == 0 else rt) for i in range(7)], np.float32)
     c0, c1 = konum["Annea'sı"]
     uc_ = yC + pC * 0.30
@@ -100,13 +101,14 @@ def _duzen(K):
     g0 = np.array(K.slogan_giris, np.float32)
     sag = K.W - (46 if d else 150)
     slogan = [
-        bezier(g0, g0 + (0, 120), (ax0 - 90, ua), (ax0, ua), 24),
+        (egri([g0, (52, g0[1] + 130), (58, ya - pA * 0.5), (ax0 - 120, ua - 14), (ax0, ua)], 14) if d      # dikeyde yazının solundan dolanır
+         else bezier(g0, g0 + (0, 120), (ax0 - 90, ua), (ax0, ua), 24)),
         np.array([(ax0, ua), (ax1, ua)], np.float32),
         egri([(ax1, ua), (min(ax1 + 70, sag), ua - pA * 0.5), (min(ax1 + 20, sag), rt - 60), ((m0 + ax1) / 2, rt - 110), (m0 - 70, rt - 20), (m0, rb)], 14),
         cati,
         egri([(m1, rb), (min(m1 + 90, sag - 20), rb + 10), (sag, (rb + uc_) / 2), (min(c1 + 110, sag), uc_ + 30), yay_[0]], 14),
         yay_,
-        egri([yay_[-1], (c0 - 90, uc_ - 40), ((c0 + p0[0]) / 2 - 40, (uc_ + p0[1]) / 2), p0 + (40, 40), p0], 14),
+        egri([yay_[-1], (c0 - 70, uc_ + pC * 0.30), (max(sol_ - 30, 60), uc_ + pC * 0.22), (max(sol_ - 80, 34), (uc_ + p0[1]) / 2 + 40), p0 + (-50, 70), p0], 14),
     ]
     solo = 138 * BIRIM * (1.5 if d else 1.6)
     G = np.array(K.logo_merkez, np.float32) + ((DELIK[0] - 0.5) * solo, (DELIK[1] - 0.5) * solo)
@@ -124,10 +126,11 @@ def _duzen(K):
     P = np.concatenate([np.asarray(p, np.float32) for p in parcalar])
     uz = np.concatenate([[0], np.cumsum([np.linalg.norm(np.diff(p, axis=0), axis=1).sum() + (np.linalg.norm(parcalar[i + 1][0] - p[-1]) if i + 1 < len(parcalar) else 0) for i, p in enumerate(parcalar)])])
     # çizgi ucunun ve kuyruğunun zaman -> yay uzunluğu anahtarları (slogan parçaları 0..6, söz parçaları 7..13)
-    U, z = uz, uz[7:] 
+    U, z = uz, uz[7:]
+    tA = A[-1] - 0.08 if d else A[0]                                  # dikeyde alt çizgi ikinci satırla (büyüsün.) birlikte başlar
     anahtar = [
-        (ARALIK[0], 0), (A[0], U[1]), (A[-1], U[1] + 0.62 * (U[2] - U[1])), (A_SON - 0.06, U[2]),
-        (B[1], U[3]), (B[2], U[4]), (B[3] - 0.22, U[4]), (B[4], U[5]), (B[5], U[6]), (Z.SOZ_BAS, U[7]),
+        (ARALIK[0], 0), (tA, U[1]), ((tA + A_SON) / 2, U[1] + 0.6 * (U[2] - U[1])), (A_SON - 0.06, U[2]),
+        (B[1], U[3]), (B[2], U[4]), (B[3] - 0.22, U[4]), (B[4], U[5]), (B[4] + 0.32, U[6]), (Z.SOZ_BAS - 0.24, U[6]), (Z.SOZ_BAS, U[7]),
         (KB[0], z[1]), (KB[1], z[1] + ilk[0] + (x0 - cs)), (KB[1] + 0.40, z[2]),
         (KB[2], z[3]), (KB[3], z[3] + (cg - x0 - en[1])), (KB[3] + 0.35, z[4]),
         (KB[4], z[5]), (KB[5], z[5] + ilk[2] + (x0 - cs)), (KB[5] + 0.20, z[6]), (TOPLAN, z[7]),
@@ -136,8 +139,8 @@ def _duzen(K):
     assert all(np.diff(T) > 0) and all(np.diff(S) >= 0), anahtar
     uc = PchipInterpolator(T, S)
     geri_cek = KB[5] - 0.05                                           # kuyruk bu andan sonra ucu yakalar
-    kuy = [(ARALIK[0], 0), (A[0] - 0.05, 0), (A[0] + 0.12, U[1]), (A_SON - 0.04, U[1]), (B[1] + 0.05, U[3]), (B[3] - 0.26, U[3]),
-           (B[4] + 0.06, U[5]), (B[5] + 0.02, U[5]), (Z.SOZ_BAS, U[7] - 110), (KB[0] + 0.10, z[1]), (geri_cek, z[1]), (TOPLAN, z[7] - 44)]
+    kuy = [(ARALIK[0], 0), (tA - 0.05, 0), (tA + 0.12, U[1]), (A_SON - 0.04, U[1]), (B[1] + 0.05, U[3]), (B[3] - 0.26, U[3]),
+           (B[4] + 0.06, U[5]), (Z.SOZ_BAS - 0.22, U[5]), (Z.SOZ_BAS, U[7] - 110), (KB[0] + 0.10, z[1]), (geri_cek, z[1]), (TOPLAN, z[7] - 44)]
     Tk, Sk = zip(*kuy)
     assert all(np.diff(Tk) > 0) and all(np.diff(Sk) >= 0), kuy
     kuyruk = PchipInterpolator(Tk, Sk)
