@@ -354,9 +354,9 @@ def _dizi():
         # "çocuklar arkadaş bulsun": çocuk eşyaları ÇİFTLER hâlinde gelir (insan çizmeden)
         ("skuter1", -448, -6, -8, T_COCUK, 1.0), ("skuter2", -372, 8, 7, T_COCUK + 0.08, 1.0),
         ("ayakkabi", -262, 236, 14, T_COCUK + 0.16, 0.9), ("ayakkabi2", -138, 246, -10, T_COCUK + 0.24, 0.9),
-        ("oto1", -18, -42, 0, T_ARKADAS, 1.0), ("oto2", 92, -42, 180, T_ARKADAS + 0.08, 1.0),
+        ("oto1", -44, -26, 0, T_ARKADAS, 1.0), ("oto2", 66, -26, 180, T_ARKADAS + 0.08, 1.0),
         ("top2", 340, -140, 0, T_ARKADAS + 0.18, 0.92),
-        ("bardak", -78, -92, 0, T_SEN, 1.0),                               # "sen de": üçüncü kahve
+        ("bardak", -112, -78, 0, T_SEN, 1.0),                               # "sen de": üçüncü kahve
     ]
 
 
