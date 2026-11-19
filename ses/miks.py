@@ -24,6 +24,29 @@ def vo_yukle(ad):
     return x, json.load(open(f"vo/{ad}.json"))
 
 
+def duraklara_oturt(x, S_):
+    """Satır sınırlarını ses enerjisindeki duraklara oturtur. Modelin zaman
+    damgaları (özellikle v3'te) ~0,2 sn kayabildiği için sınırlar sesten ölçülür."""
+    h = int(0.01 * SR)
+    env = np.sqrt(signal.fftconvolve(x ** 2, np.ones(3 * h) / (3 * h), "same"))[::h]
+    sessiz = env < env.max() * 0.035
+    out = [list(p) for p in S_]
+    for k in range(len(S_) - 1):
+        i0, i1 = int((S_[k][1] - 0.5) * 100), int((S_[k + 1][0] + 0.5) * 100)
+        i0 = max(i0, int((S_[k][0] + 0.2) * 100)); i1 = min(i1, int((S_[k + 1][1] - 0.1) * 100), len(env))
+        en, bas, i = (0, None), None, i0
+        for i in range(i0, i1 + 1):
+            if i < i1 and sessiz[i]:
+                bas = i if bas is None else bas
+            elif bas is not None:
+                en = max(en, (i - bas, bas)); bas = None
+        if en[0] >= 6:                                  # en az 60 ms durak
+            out[k][1] = en[1] / 100; out[k + 1][0] = (en[1] + en[0]) / 100
+    ses = np.flatnonzero(~sessiz)
+    out[0][0] = ses[0] / 100; out[-1][1] = (ses[-1] + 1) / 100
+    return [tuple(p) for p in out]
+
+
 def kelimeler(a, i0, i1):
     """[i0,i1] karakter aralığındaki kelimelerin (metin, baş, son) listesi."""
     ch, s, e = a["characters"], a["character_start_times_seconds"], a["character_end_times_seconds"]
@@ -38,7 +61,8 @@ def kelimeler(a, i0, i1):
 
 def kur(ad, mz, fx):
     x, a = vo_yukle(ad)
-    S_ = satirlar(a)
+    EL = satirlar(a)
+    S_ = duraklara_oturt(x, EL)
     txt = "".join(a["characters"])
     # satırları kes: 40 ms ön pay, kuyruk bir sonraki satıra kadar (en çok 0,35 sn)
     parcalar, pos = [], 0
@@ -47,7 +71,8 @@ def kur(ad, mz, fx):
         p = x[max(0, int((bs - 0.04) * SR)): int(son * SR)].copy()
         f = int(0.03 * SR); p[:f] *= np.linspace(0, 1, f); g = int(0.08 * SR); p[-g:] *= np.linspace(1, 0, g)
         i0 = txt.index(metin, pos); pos = i0 + len(metin)
-        kel = [(w, hedef + (b - bs), hedef + (e - bs)) for w, b, e in kelimeler(a, i0, pos - 1)]
+        (eb, es) = EL[k]; olc = (sn - bs) / max(es - eb, 1e-3)     # kelime anları ölçülen satıra ölçeklenir
+        kel = [(w, hedef + max(0, b - eb) * olc, hedef + min(sn - bs, (e - eb) * olc)) for w, b, e in kelimeler(a, i0, pos - 1)]
         parcalar.append((p, hedef - 0.04, kel, hedef + (sn - bs)))
     # seslendirme -16 LUFS (yalnız konuşma üzerinden ölçülür)
     kazanc = 10 ** ((-16 - olcer.integrated_loudness(np.concatenate([p for p, *_ in parcalar]))) / 20)

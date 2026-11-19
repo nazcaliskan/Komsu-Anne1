@@ -4,7 +4,7 @@
   {
    "metin": "Aklına takılan her şey…",
    "bas": 0.5,
-   "son": 1.974,
+   "son": 2.01,
    "kelimeler": [
     {
      "k": "Aklına",
@@ -13,25 +13,25 @@
     },
     {
      "k": "takılan",
-     "bas": 0.918,
-     "kare": 55
+     "bas": 0.928,
+     "kare": 56
     },
     {
      "k": "her",
-     "bas": 1.348,
-     "kare": 81
+     "bas": 1.369,
+     "kare": 82
     },
     {
      "k": "şey",
-     "bas": 1.649,
-     "kare": 99
+     "bas": 1.677,
+     "kare": 101
     }
    ]
   },
   {
    "metin": "bir sokak ötede cevabını bulur.",
    "bas": 2.67,
-   "son": 4.481,
+   "son": 4.47,
    "kelimeler": [
     {
      "k": "bir",
@@ -40,22 +40,22 @@
     },
     {
      "k": "sokak",
-     "bas": 2.995,
+     "bas": 2.993,
      "kare": 180
     },
     {
      "k": "ötede",
-     "bas": 3.343,
-     "kare": 201
+     "bas": 3.339,
+     "kare": 200
     },
     {
      "k": "cevabını",
-     "bas": 3.633,
+     "bas": 3.627,
      "kare": 218
     },
     {
      "k": "bulur",
-     "bas": 4.156,
+     "bas": 4.147,
      "kare": 249
     }
    ]
@@ -63,7 +63,7 @@
   {
    "metin": "Tek dokunuş…",
    "bas": 5.4,
-   "son": 6.236,
+   "son": 6.23,
    "kelimeler": [
     {
      "k": "Tek",
@@ -72,7 +72,7 @@
     },
     {
      "k": "dokunuş",
-     "bas": 5.737,
+     "bas": 5.735,
      "kare": 344
     }
    ]
@@ -80,7 +80,7 @@
   {
    "metin": "ve mahallen yanında.",
    "bas": 6.6,
-   "son": 7.807,
+   "son": 7.73,
    "kelimeler": [
     {
      "k": "ve",
@@ -89,20 +89,20 @@
     },
     {
      "k": "mahallen",
-     "bas": 6.786,
-     "kare": 407
+     "bas": 6.774,
+     "kare": 406
     },
     {
      "k": "yanında",
-     "bas": 7.378,
-     "kare": 443
+     "bas": 7.328,
+     "kare": 440
     }
    ]
   },
   {
    "metin": "Küçülen tulumu atma; bir sokak ötede Fatma.",
    "bas": 10.4,
-   "son": 13.256,
+   "son": 13.17,
    "kelimeler": [
     {
      "k": "Küçülen",
@@ -111,40 +111,40 @@
     },
     {
      "k": "tulumu",
-     "bas": 10.911,
-     "kare": 655
+     "bas": 10.896,
+     "kare": 654
     },
     {
      "k": "atma",
-     "bas": 11.259,
-     "kare": 676
+     "bas": 11.233,
+     "kare": 674
     },
     {
      "k": "bir",
-     "bas": 11.932,
-     "kare": 716
+     "bas": 11.886,
+     "kare": 713
     },
     {
      "k": "sokak",
-     "bas": 12.211,
-     "kare": 733
+     "bas": 12.156,
+     "kare": 729
     },
     {
      "k": "ötede",
-     "bas": 12.524,
-     "kare": 751
+     "bas": 12.46,
+     "kare": 748
     },
     {
      "k": "Fatma",
-     "bas": 12.815,
-     "kare": 769
+     "bas": 12.742,
+     "kare": 765
     }
    ]
   },
   {
    "metin": "Anneden anneye, elden ele, gönülden gönüle.",
    "bas": 13.5,
-   "son": 16.762,
+   "son": 16.71,
    "kelimeler": [
     {
      "k": "Anneden",
@@ -153,35 +153,35 @@
     },
     {
      "k": "anneye",
-     "bas": 14.022,
+     "bas": 14.014,
      "kare": 841
     },
     {
      "k": "elden",
-     "bas": 14.788,
-     "kare": 887
+     "bas": 14.767,
+     "kare": 886
     },
     {
      "k": "ele",
-     "bas": 15.23,
-     "kare": 914
+     "bas": 15.202,
+     "kare": 912
     },
     {
      "k": "gönülden",
-     "bas": 15.752,
-     "kare": 945
+     "bas": 15.716,
+     "kare": 943
     },
     {
      "k": "gönüle",
-     "bas": 16.356,
-     "kare": 981
+     "bas": 16.31,
+     "kare": 979
     }
    ]
   },
   {
    "metin": "Annea.",
    "bas": 17.5,
-   "son": 18.011,
+   "son": 17.95,
    "kelimeler": [
     {
      "k": "Annea",

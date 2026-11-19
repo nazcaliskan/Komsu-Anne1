@@ -6,10 +6,18 @@ METIN = ("Aklına takılan her şey… bir sokak ötede cevabını bulur. "
          "Küçülen tulumu atma; bir sokak ötede Fatma. "
          "Anneden anneye, elden ele, gönülden gönüle. "
          "Annea.")
+# v3 modeli için duygu yönergeli metin: köşeli etiketler okunmaz, tonu yönlendirir.
+METIN_V3 = ("[warmly, gently] Aklına takılan her şey… bir sokak ötede cevabını bulur. "
+            "[smiling] Tek dokunuş… ve mahallen yanında. "
+            "[tenderly] Küçülen tulumu atma; bir sokak ötede Fatma. "
+            "[heartfelt, slower] Anneden anneye, elden ele, gönülden gönüle. "
+            "[softly] Annea.")
 def uret(voice_id, ad, seed, model="eleven_multilingual_v2"):
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/with-timestamps?output_format=mp3_44100_128"
     body = {"text": METIN, "model_id": model, "language_code": "tr", "seed": seed,
             "voice_settings": {"stability": 0.45, "similarity_boost": 0.8, "style": 0.25, "use_speaker_boost": True, "speed": 1.0}}
+    if model == "eleven_v3":
+        body.update(text=METIN_V3, voice_settings={"stability": 0.5, "similarity_boost": 0.75})
     req = urllib.request.Request(url, json.dumps(body).encode(), {"Content-Type": "application/json", "xi-api-key": "proxy-injected"})
     try:
         d = json.load(urllib.request.urlopen(req, timeout=120))
