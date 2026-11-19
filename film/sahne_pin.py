@@ -3,7 +3,7 @@
 1.60–2.60 arasında harita ve pin geriye düşüp bulanarak zemine karışır."""
 import functools
 import numpy as np, cv2
-from ortak import (Z, KREM2, ADACAYI_ACIK, BEYAZ, MERCAN, afin, nokta, cokgen, bos_katman, donustur, katman_bas,
+from ortak import (Z, KREM2, NIL_ACIK, BEYAZ, SOMON, afin, nokta, cokgen, bos_katman, donustur, katman_bas,
                    bulanik, cizgi, alt_zaman, yol_parca, egri, bezier, pin, halka, ara, yumusak, cik, gir, gir_cik,
                    yay, kar, _yd_noktalar)
 
@@ -43,12 +43,12 @@ def _harita(W, H, ax, ay):
             g = 21 if (i + j) % 5 == 0 else 14                 # ana cadde / ara sokak yarı genişliği
             u0, u1, v0, v1 = us[i] + g, us[i + 1] - g, vs[j] + g, vs[j + 1] - g
             park = r.random() < 0.16 and not (u0 < 0 < u1 and v0 < 0 < v1)
-            cokgen(k, d(_yd_noktalar(u0, v0, u1, v1, 26)), ADACAYI_ACIK if park else tonlar[r.integers(4)], 0.94)
+            cokgen(k, d(_yd_noktalar(u0, v0, u1, v1, 26)), NIL_ACIK if park else tonlar[r.integers(4)], 0.94)
             if park:
                 for _ in range(int((u1 - u0) * (v1 - v0) / 9000)):
                     x, y, rr = r.uniform(u0 + 30, u1 - 30), r.uniform(v0 + 30, v1 - 30), r.uniform(13, 24)
                     a = np.linspace(0, 2 * np.pi, 20, endpoint=False)
-                    cokgen(k, d(np.stack([x + rr * np.cos(a), y + rr * np.sin(a)], 1)), (203, 224, 210), 0.95)
+                    cokgen(k, d(np.stack([x + rr * np.cos(a), y + rr * np.sin(a)], 1)), (186, 228, 210), 0.95)
                 continue
             # ada içi yapı izleri: hafif gölgeli küçük bloklar (2.5B hissi)
             nx, ny = max(1, int((u1 - u0) // 120)), max(1, int((v1 - v0) // 130))
@@ -120,7 +120,7 @@ def ciz(t, K, tuval):
             a = np.linspace(0, 2 * np.pi, 28, endpoint=False)
             g = min(1.0, q * 5)
             cokgen(kat, np.stack([uc[0] + 4 + boy * 0.30 * g * olcek * np.cos(a), uc[1] + 5 + boy * 0.10 * g * olcek * np.sin(a)], 1), (120, 70, 45), 0.26, bulanik=6)
-            pin(kat, uc[0], uc[1], boy, MERCAN, olcek_x=sx, olcek_y=max(sy, 0.02))
+            pin(kat, uc[0], uc[1], boy, SOMON, olcek_x=sx, olcek_y=max(sy, 0.02))
         if f > 0:
             kat = bulanik(kat, 13 * f)
         katman_bas(tuval, kat, soluk)

@@ -5,22 +5,23 @@ import numpy as np, cv2
 import ortak as O
 from ortak import Z
 
-ARALIK = (Z.ETK_BAS, Z.SOZ_BAS)
-T0, T_SON = Z.ETK_BAS, Z.SOZ_BAS
-BITIS = T_SON - 0.03                     # 19.12: bundan sonra ekranda yalnız çizgi
+ARALIK = (Z.ETK_BAS, Z.ONERI_BAS)
+T0, T_SON = Z.ETK_BAS, Z.ONERI_BAS
+BITIS = T_SON - 0.03                     # 20.37: bundan sonra ekranda yalnız çizgi
 
 try:
-    _k = json.load(open(f"{O.KOK}/cikti/ses/kilit_lilyv3_5.json"))["satirlar"]
-    _w = {k["k"].lower(): k["bas"] for s in (_k[6], _k[7]) for k in s["kelimeler"]}
+    _k = json.load(open(f"{O.KOK}/cikti/ses/kilit_lilyv3_2.json"))["satirlar"]
+    _w = {k["k"].lower(): k["bas"] for s in (_k[7], _k[8]) for k in s["kelimeler"]}
 except Exception:
     _w = {}
 T_KAHVE, T_OYUN, T_ATOLYE = _w.get("kahve", 14.73), _w.get("oyun", 15.68), _w.get("atölye", 16.26)
-T_MAHALLE = _w.get("mahalle", 17.93)
+T_COCUK, T_ARKADAS = _w.get("çocuklar", 18.22), _w.get("arkadaş", 18.77)
+T_BULSUN, T_SEN = _w.get("bulsun", 19.30), _w.get("sen", 19.72)
 
 M = 70                                   # arka plan payı (kamera kayması için)
 ISIK = np.array([10.0, 14.0])            # gölge yönü: ışık sol üstten
 AHSAP, KAHVE, KOYU = (222, 186, 140), (116, 76, 52), (70, 58, 52)
-BAYRAK = [O.SEFTALI, O.ADACAYI_ACIK, O.BAL, O.LAVANTA, (255, 250, 240), O.MERCAN_ACIK]
+BAYRAK = [O.YAVRUAGZI, O.NIL_ACIK, O.BAL, O.SOMON, (255, 250, 240), O.NIL]
 
 
 def _yer(K):
@@ -55,16 +56,16 @@ def _arka(K):
     Y = _yer(K)
     W, H = K.W + 2 * M, K.H + 2 * M
     img = np.empty((H, W, 3), np.float32)
-    img[:] = (183, 206, 172)
+    img[:] = (176, 224, 200)
     g = _gurultu(H, W, 90, 1) * 7 + _gurultu(H, W, 14, 2) * 3.5 + _rng(3).standard_normal((H, W)).astype(np.float32) * 2.2
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
     g += np.sin((xx * 0.6 + yy) / 62.0) * 2.2                         # biçme izleri
-    img += g[..., None] * np.array([0.8, 1.0, 0.7], np.float32)
+    img += g[..., None] * np.array([0.8, 1.0, 0.85], np.float32)
     img = np.clip(img, 0, 255).astype(np.uint8)
     # patika: açık, yumuşak kenarlı
     kat = O.bos_katman((W, H))
     yol = O.egri([(x + M, y + M) for x, y in Y["patika"]], 30)
-    O.cizgi_ince(kat, yol + ISIK * 0.35, (150, 170, 140), 168, 0.5)
+    O.cizgi_ince(kat, yol + ISIK * 0.35, (128, 190, 162), 168, 0.5)
     O.cizgi_ince(kat, yol, (240, 229, 210), 160)
     kat = O.bulanik(kat, 2.2)
     O.katman_bas(img, kat)
@@ -91,7 +92,7 @@ _AGAC = [(0, 0, 120), (-90, 50, 80), (80, 70, 90), (40, -90, 75), (-70, -70, 70)
 
 def _golge_el(img, cx, cy, r, blur, alfa):
     a = np.linspace(0, 2 * np.pi, 36, endpoint=False)
-    O.cokgen(img, np.stack([cx + r * np.cos(a), cy + r * np.sin(a)], 1), (52, 70, 56), alfa, bulanik=blur)
+    O.cokgen(img, np.stack([cx + r * np.cos(a), cy + r * np.sin(a)], 1), (36, 96, 76), alfa, bulanik=blur)
 
 
 @functools.lru_cache(maxsize=2)
@@ -103,12 +104,12 @@ def _taclar(K):
     for ax, ay, s in Y["agac"]:
         for i, (dx, dy, rr) in enumerate(_AGAC):
             cx, cy, R = ax + M + dx * s, ay + M + dy * s, rr * s
-            ton = [(92, 128, 104), (104, 142, 114), (118, 154, 124)][i % 3]
+            ton = [(70, 170, 136), (92, 191, 158), (112, 204, 172)][i % 3]
             _el(kat, cx, cy, R, R, ton)
             _el(kat, cx - R * 0.22, cy - R * 0.26, R * 0.66, R * 0.62, tuple(min(255, c + 16) for c in ton), 0.8)
             for _ in range(5):
                 a, d = r.uniform(0, 6.28), r.uniform(0.2, 0.75) * R
-                _el(kat, cx + d * np.cos(a) - 6, cy + d * np.sin(a) - 8, R * 0.16, R * 0.14, (150, 182, 150), 0.5, n=14)
+                _el(kat, cx + d * np.cos(a) - 6, cy + d * np.sin(a) - 8, R * 0.16, R * 0.14, (168, 228, 202), 0.5, n=14)
     return O.bulanik(kat, 2.6)
 
 
@@ -130,10 +131,10 @@ def _ortu(s):
     kare = 70 * s
     for i in range(int(w / kare) + 1):
         if i % 2 == 0:
-            O.kutu(kat, i * kare, 0, min(w, (i + 1) * kare), h, 0, (236, 150, 128), 0.42)
+            O.kutu(kat, i * kare, 0, min(w, (i + 1) * kare), h, 0, O.SOMON, 0.46)
     for j in range(int(h / kare) + 1):
         if j % 2 == 0:
-            O.kutu(kat, 0, j * kare, w, min(h, (j + 1) * kare), 0, (236, 150, 128), 0.42)
+            O.kutu(kat, 0, j * kare, w, min(h, (j + 1) * kare), 0, O.SOMON, 0.46)
     f = kat.astype(np.float32)
     doku = _rng(11).standard_normal((h, w)).astype(np.float32) * 3.0 + _gurultu(h, w, 80, 12) * 7 + _gurultu(h, w, 3, 13) * 2
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
@@ -184,10 +185,10 @@ def _bardak():
 
 def _termos():
     k = O.bos_katman((190, 80))
-    O.kutu(k, 8, 12, 150, 68, 26, O.ADACAYI)
+    O.kutu(k, 8, 12, 150, 68, 26, O.NIL_KOYU)
     O.kutu(k, 140, 16, 182, 64, 12, (232, 226, 214))
-    O.kutu(k, 132, 12, 146, 68, 4, (70, 98, 80))
-    O.kutu(k, 22, 20, 128, 30, 5, (150, 180, 158), 0.8)
+    O.kutu(k, 132, 12, 146, 68, 4, (34, 110, 88))
+    O.kutu(k, 22, 20, 128, 30, 5, (130, 206, 180), 0.8)
     return _isiklandir(k, 8)
 
 
@@ -199,12 +200,13 @@ def _blok(renk, harf_renk):
     return _isiklandir(k, 9)
 
 
-def _top():
+def _top(dilim=None):
+    dilim = dilim or O.SOMON
     k = O.bos_katman((112, 112))
     _el(k, 56, 56, 50, 50, (255, 250, 240))
     for a0 in (0, 120, 240):
         a = np.radians(np.linspace(a0, a0 + 60, 12))
-        O.cokgen(k, np.concatenate([[[56, 56]], np.stack([56 + 50 * np.cos(a), 56 + 50 * np.sin(a)], 1)]), O.MERCAN)
+        O.cokgen(k, np.concatenate([[[56, 56]], np.stack([56 + 50 * np.cos(a), 56 + 50 * np.sin(a)], 1)]), dilim)
     _el(k, 56, 56, 9, 9, (255, 250, 240))
     f = k.astype(np.float32)
     yy, xx = np.mgrid[0:112, 0:112].astype(np.float32)
@@ -250,14 +252,14 @@ def _kagit():
         r = np.radians(a)
         O.cizgi_ince(k, np.array([(140 + 34 * np.cos(r), 62 + 34 * np.sin(r)), (140 + 46 * np.cos(r), 62 + 46 * np.sin(r))]), O.BAL, 5)
     x = np.linspace(24, 176, 40)
-    O.cizgi_ince(k, np.stack([x, 190 + 14 * np.sin(x / 13)], 1), (127, 168, 142), 9)
-    O.cizgi_ince(k, O.egri([(40, 150), (60, 110), (84, 150), (104, 112), (126, 150)], 10), O.LAVANTA, 7)
+    O.cizgi_ince(k, np.stack([x, 190 + 14 * np.sin(x / 13)], 1), O.NIL, 9)
+    O.cizgi_ince(k, O.egri([(40, 150), (60, 110), (84, 150), (104, 112), (126, 150)], 10), O.SOMON, 7)
     return _isiklandir(k, 6)
 
 
 def _firildak():
     k = O.bos_katman((170, 170))
-    for i, renk in enumerate((O.SEFTALI, O.LAVANTA, O.BAL, (127, 168, 142))):
+    for i, renk in enumerate((O.YAVRUAGZI, O.NIL, O.BAL, O.SOMON)):
         a = np.radians(i * 90)
         c, s = np.cos(a), np.sin(a)
         P = np.array([(0, 0), (72, 0), (36, -40)], np.float32)
@@ -283,19 +285,47 @@ def _tabak():
     return _isiklandir(k, 8)
 
 
-def _ayakkabi():
+def _ayakkabi(renk=None, ic=None):
+    renk, ic = renk or O.YAVRUAGZI, ic or (226, 140, 122)
     k = O.bos_katman((150, 120))
     for x, aci in ((42, -8), (104, 8)):
-        _el(k, x, 60, 27, 48, O.SEFTALI, aci=aci)
-        _el(k, x, 72, 17, 26, (214, 150, 118), aci=aci)
+        _el(k, x, 60, 27, 48, renk, aci=aci)
+        _el(k, x, 72, 17, 26, ic, aci=aci)
         _el(k, x, 28, 15, 11, (255, 246, 236), 0.8, aci=aci)
     return _isiklandir(k, 8)
 
 
+def _oto(renk):
+    """Oyuncak araba, üstten; burnu sağda."""
+    k = O.bos_katman((120, 76))
+    for x in (30, 88):
+        O.kutu(k, x - 12, 6, x + 12, 70, 7, KOYU)
+    O.kutu(k, 8, 14, 112, 62, 18, renk)
+    O.kutu(k, 40, 20, 84, 56, 9, (255, 250, 242), 0.92)
+    O.kutu(k, 46, 25, 78, 51, 6, tuple(int(c * 0.9) for c in renk))
+    _el(k, 106, 24, 4, 5, (255, 244, 200))
+    _el(k, 106, 52, 4, 5, (255, 244, 200))
+    return _isiklandir(k, 9)
+
+
+def _skuter(renk):
+    """Minik scooter, üstten; gidon yukarıda."""
+    k = O.bos_katman((84, 190))
+    O.kutu(k, 34, 10, 50, 44, 7, KOYU)
+    O.kutu(k, 34, 150, 50, 182, 7, KOYU)
+    O.kutu(k, 26, 50, 58, 160, 15, renk)
+    O.kutu(k, 31, 62, 53, 148, 9, tuple(min(255, c + 34) for c in renk), 0.55)
+    O.kutu(k, 37, 26, 47, 60, 4, (232, 226, 214))
+    O.kutu(k, 6, 22, 78, 34, 6, KOYU)
+    O.kutu(k, 4, 20, 22, 36, 7, renk)
+    O.kutu(k, 62, 20, 80, 36, 7, renk)
+    return _isiklandir(k, 9)
+
+
 def _boya():
     k = O.bos_katman((230, 190))
-    for i, renk in enumerate((O.MERCAN_ACIK, O.LAVANTA, O.BAL, (127, 168, 142))):
-        hr = _kalem(renk if i else (236, 150, 128))
+    for i, renk in enumerate((O.SOMON, O.NIL, O.BAL, O.NIL_KOYU)):
+        hr = _kalem(renk)
         O.yapistir(k, hr, 112 + i * 4, 36 + i * 38, aci=-24 + i * 15)
     return k
 
@@ -304,10 +334,12 @@ def _boya():
 def _nesne(ad):
     hr = {"bardak": _bardak, "termos": _termos, "top": _top, "kagit": _kagit, "firildak": _firildak,
           "tabak": _tabak, "ayakkabi": _ayakkabi, "boya": _boya,
-          "blok1": lambda: _blok(AHSAP, O.MERCAN), "blok2": lambda: _blok(O.BAL, (255, 250, 240)),
-          "blok3": lambda: _blok(O.SEFTALI, (127, 168, 142)),
-          "araba": lambda: _araba((127, 168, 142)), "araba2": lambda: _araba(O.LAVANTA)}[ad]()
-    yuksek = ad.startswith("araba") or ad in ("termos", "top")
+          "blok1": lambda: _blok(AHSAP, O.SOMON), "blok2": lambda: _blok(O.BAL, (255, 250, 240)),
+          "blok3": lambda: _blok(O.YAVRUAGZI, O.NIL),
+          "top2": lambda: _top(O.NIL), "ayakkabi2": lambda: _ayakkabi(O.NIL, O.NIL_KOYU),
+          "oto1": lambda: _oto(O.SOMON), "oto2": lambda: _oto(O.NIL), "skuter1": lambda: _skuter(O.NIL_KOYU), "skuter2": lambda: _skuter(O.SOMON),
+          "araba": lambda: _araba(O.NIL)}[ad]()
+    yuksek = ad.startswith(("araba", "skuter", "top")) or ad == "termos"
     return hr, _golge(hr, 11 if yuksek else 7, 0.36 if yuksek else 0.30)
 
 
@@ -319,7 +351,12 @@ def _dizi():
         ("blok1", 120, -190, -12, T_OYUN, 1.0), ("blok2", 196, -150, 10, T_OYUN + 0.07, 1.0), ("blok3", 146, -110, 24, T_OYUN + 0.14, 1.0),
         ("top", 250, -20, 0, T_OYUN + 0.20, 1.0), ("araba", 420, 70, 14, T_OYUN + 0.30, 1.0),
         ("kagit", 40, 130, -10, T_ATOLYE, 1.0), ("boya", -150, 150, 0, T_ATOLYE + 0.08, 1.0), ("firildak", 210, 170, 0, T_ATOLYE + 0.18, 1.0),
-        ("tabak", 10, -40, 0, T_MAHALLE - 0.05, 1.0), ("araba2", -420, 30, -16, T_MAHALLE + 0.10, 1.0), ("ayakkabi", -250, 230, 20, T_MAHALLE + 0.24, 1.0),
+        # "çocuklar arkadaş bulsun": çocuk eşyaları ÇİFTLER hâlinde gelir (insan çizmeden)
+        ("skuter1", -448, -6, -8, T_COCUK, 1.0), ("skuter2", -372, 8, 7, T_COCUK + 0.08, 1.0),
+        ("ayakkabi", -262, 236, 14, T_COCUK + 0.16, 0.9), ("ayakkabi2", -138, 246, -10, T_COCUK + 0.24, 0.9),
+        ("oto1", -18, -42, 0, T_ARKADAS, 1.0), ("oto2", 92, -42, 180, T_ARKADAS + 0.08, 1.0),
+        ("top2", 340, -140, 0, T_ARKADAS + 0.18, 0.92),
+        ("bardak", -78, -92, 0, T_SEN, 1.0),                               # "sen de": üçüncü kahve
     ]
 
 
@@ -354,7 +391,7 @@ def _giris_yolu(t, K, Y):
 def _cikis_yolu(t, K, Y):
     ip = _ip(t, K, Y)[::-1]                                   # B -> A
     A = ip[-1]
-    s = np.array(K.s6_bas, np.float32)
+    s = np.array(K.oneri_giris, np.float32)
     son = O.bezier(A, A + (-40, 130), s + (-150, -150), s, 28)
     return np.concatenate([ip[:-1], son])
 
@@ -400,6 +437,9 @@ def _bayraklar(tuval, t, K, Y):
             faz = dalga_t - u * 0.45
             if faz > 0:
                 acik += 26 * np.exp(-faz * 3.2) * np.sin(faz * 13)
+        faz2 = (t - T_BULSUN) - (1 - u) * 0.45                # "bulsun"da sağdan sola ikinci dalga
+        if faz2 > 0:
+            acik += 22 * np.exp(-faz2 * 2.6) * np.sin(faz2 * 12)
         a = np.radians(egim + acik)
         c, s = np.cos(a), np.sin(a)
         boy = bh * min(cik, 1.15)
@@ -424,9 +464,8 @@ KW, KH = 908, 484
 def _kart_taban():
     k = O.bos_katman((KW, KH))
     O.kutu(k, 0, 0, KW, KH, 34, O.BEYAZ)
-    O.kutu(k, 40, 40, 196, 196, 30, O.MERCAN_ACIK)
-    O.kutu(k, 40, 40, 196, 92, 0, O.MERCAN, 0.0)
-    O.yaz(k, "CMT", 118, 104, "nunito", 40, O.TUGLA, 900, hiza="orta", aralik=2)
+    O.kutu(k, 40, 40, 196, 196, 30, O.YAVRUAGZI_ACIK)
+    O.yaz(k, "CMT", 118, 104, "nunito", 40, O.SOMON_KOYU, 900, hiza="orta", aralik=2)
     O.yaz(k, "10.30", 118, 164, "nunito", 44, O.METIN, 900, hiza="orta")
     bas = "Parkta kahve & oyun"
     boyut = 60
@@ -434,7 +473,7 @@ def _kart_taban():
         boyut -= 1
     O.yaz(k, bas, 228, 112, "nunito", boyut, O.METIN, 800)
     O.yaz(k, "Beşiktaş · mahalle parkı", 230, 176, "nunito", 39, O.METIN2, 700)
-    for i, renk in enumerate((O.SEFTALI, O.LAVANTA, O.BAL, (127, 168, 142), O.MERCAN_ACIK)):
+    for i, renk in enumerate((O.YAVRUAGZI, O.NIL, O.BAL, O.NIL_KOYU, O.YAVRUAGZI_ACIK)):
         _el(k, 66 + i * 36, 268, 27, 27, O.BEYAZ)
         _el(k, 66 + i * 36, 268, 23, 23, renk)
     O.yaz(k, "anne katılıyor", 334, 283, "nunito", 42, O.METIN, 800)
@@ -449,20 +488,20 @@ def _kart(t):
     if g < 1:
         O.yaz(k, "8", 296, 283 - 34 * g, "nunito", 42, O.METIN, 800, alfa=1 - g)
     if g > 0:
-        O.yaz(k, "9", 296, 283 + 34 * (1 - g), "nunito", 42, O.TUGLA, 900, alfa=g)
+        O.yaz(k, "9", 296, 283 + 34 * (1 - g), "nunito", 42, O.NIL_KOYU, 900, alfa=g)
         yeni = O.yay(O.ara(d, 0.10, 0.60), 5, 2)
         if yeni > 0.02:                                       # sıraya yeni bir daire eklenir
             _el(k, 66 + 5 * 36, 268, 27 * min(yeni, 1.2), 27 * min(yeni, 1.2), O.BEYAZ)
-            _el(k, 66 + 5 * 36, 268, 23 * min(yeni, 1.2), 23 * min(yeni, 1.2), O.MERCAN)
+            _el(k, 66 + 5 * 36, 268, 23 * min(yeni, 1.2), 23 * min(yeni, 1.2), O.SOMON)
     # buton
     bas = 1 - 0.04 * np.exp(-((d - 0.02) / 0.07) ** 2) if d > -0.1 else 1.0
     dol = O.cik(O.ara(d, 0.0, 0.22))
     cx, cy, bw, bh = KW / 2, 388, (KW - 80) * bas, 108 * bas
-    O.kutu(k, cx - bw / 2, cy - bh / 2, cx + bw / 2, cy + bh / 2, bh / 2, None, cerceve=O.MERCAN, cerceve_kalinlik=4)
+    O.kutu(k, cx - bw / 2, cy - bh / 2, cx + bw / 2, cy + bh / 2, bh / 2, None, cerceve=O.SOMON, cerceve_kalinlik=4)
     if dol > 0:
-        O.kutu(k, cx - bw / 2, cy - bh / 2, cx + bw / 2, cy + bh / 2, bh / 2, O.MERCAN, dol)
+        O.kutu(k, cx - bw / 2, cy - bh / 2, cx + bw / 2, cy + bh / 2, bh / 2, O.SOMON, dol)
     if dol < 1:
-        O.yaz(k, "Katılıyorum", cx, cy + 16, "nunito", 46, O.MERCAN, 800, alfa=1 - dol, hiza="orta")
+        O.yaz(k, "Katılıyorum", cx, cy + 16, "nunito", 46, O.SOMON_KOYU, 800, alfa=1 - dol, hiza="orta")
     if dol > 0:
         w = O.yazi_olcu("Katılıyorsun", "nunito", 46, 800)[0]
         O.yaz(k, "Katılıyorsun", cx + 30, cy + 16, "nunito", 46, O.BEYAZ, 800, alfa=dol, hiza="orta")
@@ -527,6 +566,7 @@ def ciz(t, K, tuval):
             continue
         hr, gl = _nesne(ad)
         sc = O.yay(x, 5.2, 1.9) * ol * s0 * z
+        sc *= 1 + 0.07 * np.exp(-((t - T_BULSUN - 0.05 - n * 0.022) / 0.085) ** 2)     # "bulsun"da küçük ortak zıplama
         if sc < 0.03:
             continue
         px, py = O.nokta(Mk, [(ox + dx * s0, oy + dy * s0)])[0]
@@ -562,14 +602,14 @@ def ciz(t, K, tuval):
     pb = O.yay(O.ara(t, T0 + 0.70, T0 + 1.25), 5, 2)
     if t < Z.ETK_GECIS + 0.02:
         if pa > 0.03:
-            O.pin(sahne, ip[0][0], ip[0][1] + 4, 66 * min(pa, 1.2), O.MERCAN, delik=(255, 250, 244))
+            O.pin(sahne, ip[0][0], ip[0][1] + 4, 66 * min(pa, 1.2), O.SOMON, delik=(255, 250, 244))
         if pb > 0.03:
-            O.pin(sahne, ip[-1][0], ip[-1][1] + 4, 66 * min(pb, 1.2), O.ADACAYI, delik=(255, 250, 244))
+            O.pin(sahne, ip[-1][0], ip[-1][1] + 4, 66 * min(pb, 1.2), O.NIL, delik=(255, 250, 244))
 
     Mq = _kart_ciz(sahne, t, K, Y)
     d = t - Z.ETK_DOKUNUS
     if Mq is not None and -0.22 < d < 0.9:                                   # dokunuş: yarı saydam daire + halkalar
-        bx, by = O.nokta(Mq, [(KW / 2 + 150, 392)])[0]
+        bx, by = O.nokta(Mq, [(KW / 2, 388)])[0]
         ks = Y["ks"]
         gel = O.cik(O.ara(d, -0.22, -0.02))
         git = O.ara(d, 0.10, 0.34)
@@ -580,7 +620,7 @@ def ciz(t, K, tuval):
         for i in range(3):
             h = O.ara(d, i * 0.09, i * 0.09 + 0.62)
             if 0 < h < 1:
-                O.halka(sahne, bx, by, (40 + 190 * O.cik(h)) * ks, (1 - h) * 0.7, O.MERCAN, 5)
+                O.halka(sahne, bx, by, (34 + 104 * O.cik(h)) * ks, (1 - h) * 0.7, O.SOMON, 5)
 
     # giriş: çıplak zeminden belirir; çıkış: geriye bulanıklaşıp zemine söner
     gir = O.yumusak(O.ara(t, T0, T0 + 0.34))
@@ -591,7 +631,7 @@ def ciz(t, K, tuval):
         sahne = zemin if cik >= 1 else O.karistir(O.bulanik(sahne, 26 * cik), zemin, O.yumusak(cik))
     tuval[:] = sahne
 
-    # çizgi: girer, süs ipi olur; sonunda bayrakları bırakıp K.s6_bas'a akar
+    # çizgi: girer, süs ipi olur; sonunda bayrakları bırakıp K.oneri_giris'e akar
     hareketli = t < T0 + 1.0 or t >= Z.ETK_GECIS - 0.02
     yol = O.alt_zaman(lambda u: _cizgi_yolu(u, K, Y), t, 4) if hareketli else _cizgi_yolu(t, K, Y)
     kal = O.kar(12, 9, O.ara(t, T0 + 0.3, T0 + 0.9)) if t < Z.ETK_GECIS else O.kar(9, 12, O.ara(t, Z.ETK_GECIS, BITIS))

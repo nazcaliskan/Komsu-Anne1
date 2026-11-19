@@ -291,7 +291,7 @@ def _puset(dst, M, z, D, t):
     ileri = ileri / (np.linalg.norm(ileri) + 1e-6)
     yan = np.array([-ileri[1], ileri[0]], np.float32)
     sal = 1.6 * np.sin(t * 11) * (1 if 0 < p < 1 else 0)           # yürürken hafif salınım
-    k = 1.25 * olc
+    k = 1.45 * olc
     def W(pts, kay=(0, 0)):
         q = np.asarray(pts, np.float32).reshape(-1, 2) * k
         return nokta(M, c + q[:, :1] * ileri + (q[:, 1:] + sal) * yan + np.array(kay, np.float32))
@@ -424,7 +424,7 @@ def ciz(t, K, tuval):
 
     # puset çizginin ucunda ilerler; geçtiği dört evin kapısında sayaç rozetleri açılır
     _puset(tuval, M, z, D, t)
-    rb = 34 if K.dikey else 30
+    rb = 44 if K.dikey else 38
     for i, (w, an) in enumerate(zip(_rozet_yerleri(K.dikey), ROZET_AN)):
         if t > an:
             o = float(yay((t - an) / 0.5, 5.0, 1.6))
@@ -432,7 +432,7 @@ def ciz(t, K, tuval):
             yapistir(tuval, _rozet(str(i + 1), rb), rx, ry, alfa=min(1.0, (t - an) * 8), olcek=o * (0.75 + 0.25 * z))
     if t > 9.10:                                         # üst etiket: "1 puset · 4 bebek"
         o = float(yay((t - 9.10) / 0.5, 5.0, 1.4))
-        ex, ey = (K.cx, K.H - 330) if K.dikey else (K.cx - 520, K.H - 110)
+        ex, ey = (K.cx, 300) if K.dikey else (K.cx - 560, 130)
         yapistir(tuval, _rozet("1 puset · 4 bebek", 46 if K.dikey else 40), ex, ey + 3 * np.sin(1.4 * t), alfa=min(1.0, (t - 9.10) * 7), olcek=o)
 
     # cam kart: "Defne · bir sokak ötede" (9.20'de açılır, geçişe kadar okunur)

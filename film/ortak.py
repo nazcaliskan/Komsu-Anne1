@@ -18,10 +18,10 @@ import zaman as Z  # noqa: E402
 KREM = (251, 246, 241)      # #FBF6F1 sahne zemini
 KREM2 = (245, 236, 228)     # #F5ECE4
 # Palet (kullanıcı kararı): nil yeşili (mint) + somon / yavruağzı. Logo da bu renklere çevrilir.
-SOMON = (250, 128, 114)         # #FA8072 çizgi, mercan pin, vurgu
-SOMON_KOYU = (214, 84, 70)      # #D65446 küçük vurgu yazıları
-YAVRUAGZI = (255, 166, 184)     # #FFA6B8 pembe yavruağzı
+YAVRUAGZI = (255, 143, 163)     # #FF8FA3 ana vurgu: çizgi, pin, logo, butonlar (kullanıcı seçimi: somon yerine yavruağzı)
+YAVRUAGZI_KOYU = (214, 78, 106) # #D64E6A küçük vurgu yazıları
 YAVRUAGZI_ACIK = (255, 227, 233)   # #FFE3E9
+SOMON, SOMON_KOYU = YAVRUAGZI, YAVRUAGZI_KOYU     # eski adlar yavruağzına bağlanır
 NIL = (92, 191, 158)            # #5CBF9E logo yeşili, yeşil pin
 NIL_KOYU = (47, 143, 114)       # #2F8F72 küçük yeşil yazılar
 NIL_ACIK = (223, 244, 235)      # #DFF4EB
@@ -502,7 +502,7 @@ def cizgi(dst, yol, kalinlik=10, alfa=1.0, renk=MERCAN, parlama=1.0, ornekler=No
     roi = dst[y0:y1, x0:x1].astype(np.float32)
     if parlama > 0:                                   # sıcak hale: zemini mercana doğru hafifçe aydınlatır
         h = bulanik(acc, hale) * 0.42 * parlama * alfa
-        roi[..., :3] += (np.array([255, 150, 120], np.float32) - roi[..., :3]) * h[..., None]
+        roi[..., :3] += (np.array([255, 160, 175], np.float32) - roi[..., :3]) * h[..., None]
     a = acc * alfa
     cekirdek = bulanik(acc, max(1.0, min(kmax, 120) * 0.16)) ** 3 * 0.16 * min(1.0, 60 / kmax)   # içte hafif açık çekirdek (kalın dolguda söner)
     rgb = np.array(renk, np.float32) + (255 - np.array(renk, np.float32)) * cekirdek[..., None]

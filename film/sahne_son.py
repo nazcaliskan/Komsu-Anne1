@@ -1,22 +1,34 @@
-"""Söz, logo ve kapanış kartı (Z.SOZ_BAS – Z.SURE). Tüm anlar ses/zaman.py sabitlerinden ve seslendirme kilidinden gelir.
+"""Slogan, söz, logo ve kapanış kartı (Z.SLOGAN_BAS – Z.SURE). Tüm anlar ses/zaman.py sabitlerinden ve
+seslendirme kilidinden gelir; modülde mutlak saniye yoktur.
 
-Söz : çizgi K.s6_bas'tan girer, üç satırın altından yılan gibi akan tek bir alt çizgi olur; kelimeler
-      seslendirmenin kilit dosyasındaki anlarda oturur. Satır bitince yazı solar; çizgi Z.NEFES'te toplanmış,
-      mercan pinin göz deliğinin olacağı yerde asılıdır.
-Logo: Z.LOGO_VURUS'ta çizgi resmî ikonun mercan yarısına dönüşür (dairesel maske), yeşil yarı soldan gelip
-      yaslanır, "Annea" yazısı açılır. Logo katmanları yalnızca taşınır, ölçeklenir, soldurulur, maskelenir.
-Kart: slogan, uygulamanın dört artısı (hap etiketler), "Hemen katıl" ve adres."""
+Slogan: çizgi K.slogan_giris'ten girer; "Bebeğin sosyal büyüsün."ün altını çizer, "mahallemiz"in üstüne üç küçük
+        çatı çizer, "Annea'sı"nın altına sıcak bir yay olarak oturur; sonra kesintisiz K.s6_bas'a akar.
+Söz   : üç satırın altından yılan gibi akan tek bir alt çizgi; satır bitince yazı solar, çizgi Z.NEFES'te
+        toplanmış, mercan pinin göz deliğinin olacağı yerde asılıdır.
+Logo  : Z.LOGO_VURUS'ta çizgi resmî ikonun mercan yarısına dönüşür (dairesel maske), yeşil yarı soldan gelip
+        yaslanır, "Annea" yazısı açılır. Logo katmanları yalnızca taşınır, ölçeklenir, soldurulur, maskelenir.
+Kart  : slogan, uygulamanın dört artısı (hap etiketler), "Hemen katıl" ve adres."""
 import json, functools
 import numpy as np
 from scipy.interpolate import PchipInterpolator
-from ortak import (Z, KOK, METIN, METIN2, MERCAN, BEYAZ, ADACAYI_ACIK, MERCAN_ACIK, cizgi_ince, afin, nokta, cizgi, alt_zaman, yol_parca, bezier, yazi_olcu,
+from ortak import (Z, KOK, METIN, METIN2, SOMON, NIL, NIL_KOYU, YAVRUAGZI, BEYAZ, cizgi_ince, egri, afin, nokta, cizgi, alt_zaman, yol_parca, bezier, yazi_olcu,
                    yaz, marka, yapistir, katman_bas, kutu, golge, halka, ara, yumusak, cik, gir_cik, geri, kar)
 
-ARALIK = (Z.SOZ_BAS, Z.SURE)
+ARALIK = (Z.SLOGAN_BAS, Z.SURE)
 
-_SOZ = next(x for x in json.load(open(f"{KOK}/cikti/ses/kilit_lilyv3_5.json"))["satirlar"] if x["metin"].startswith("Anneden"))
-KB = [k["bas"] for k in _SOZ["kelimeler"]]
-SOZ_SON = _SOZ["son"]                                                  # satırın seste bittiği an          # altı kelimenin oturma anları (sn)
+_KILIT = json.load(open(f"{KOK}/cikti/ses/kilit_lilyv3_2.json"))["satirlar"]
+
+
+def _satir(bas):
+    return next(x for x in _KILIT if x["metin"].startswith(bas))
+
+
+_SOZ, _SL1, _SL2 = _satir("Anneden"), _satir("Bebeğin"), _satir("Bizim")
+KB = [k["bas"] for k in _SOZ["kelimeler"]]                             # söz: altı kelimenin oturma anları (sn)
+SOZ_SON = _SOZ["son"]                                                  # söz satırının seste bittiği an
+A = [k["bas"] for k in _SL1["kelimeler"]]                              # Bebeğin, sosyal, büyüsün
+B = [k["bas"] for k in _SL2["kelimeler"]]                              # Bizim, mahallemiz, vardı, onun, Annea'sı, var
+A_SON = _SL1["son"]
 SATIR = [["Anneden", "anneye,"], ["elden", "ele,"], ["gönülden", "gönüle."]]
 TOPLAN = Z.NEFES                                                           # çizginin toplanmayı bitirdiği an
 BIRIM = 1.5                                                            # yatay logodaki 1 birim = 1,5 px (ikon 207, yazı 165 px)
@@ -25,7 +37,7 @@ DELIK = (0.7297, 0.3759)                                               # mercan 
 
 def _kamera(t, K):
     """Bölüm boyunca hiç durmayan çok yavaş itme (kadraj merkezine)."""
-    s = 1 + 0.006 * (t - ARALIK[0])
+    s = 1 + 0.004 * (t - ARALIK[0])
     return afin(s, 0, (K.cx, K.cy), (K.cx, K.cy)), s
 
 
@@ -49,11 +61,58 @@ def _duzen(K):
     cs, cg = (x0 - 20, xr + 8) if d else (x0 - 34, xr + 12)           # çizginin sol / sağ dönüş hizası (yazıdan pay)
     u = [y + alt for y in taban]
     p0 = np.array(K.s6_bas, np.float32)
+    # ---- slogan düzeni
+    def sigdir(metin, punto, oran):
+        return int(min(punto, punto * oran * K.W / yazi_olcu(metin, "serif", punto)[0]))
+    if d:
+        pA = sigdir("Bebeğin sosyal", 124, 0.80)
+        satA = [(["Bebeğin", "sosyal"], 880), (["büyüsün."], 880 + round(pA * 1.22))]
+        pB, pC, yB, yC = sigdir("Bizim mahallemiz vardı;", 84, 0.80), sigdir("onun Annea'sı var.", 128, 0.84), 905, 1075
+    else:
+        pA = 124
+        satA = [(["Bebeğin", "sosyal", "büyüsün."], 570)]
+        pB, pC, yB, yC = 86, 140, 470, 650
+    skel = []                                                         # (metin, x, taban, renk, an, grup, punto)
+    ai = 0
+    for kel, y in satA:
+        x = (K.W - yazi_olcu(" ".join(kel), "serif", pA)[0]) / 2
+        ax0 = x
+        for w in kel:
+            skel.append((w, x, y, SOMON if w == "sosyal" else METIN, A[ai], "A", pA)); ai += 1
+            x += yazi_olcu(w + " ", "serif", pA)[0]
+        ax1, ya = ax0 + yazi_olcu(" ".join(kel), "serif", pA)[0], y
+    ua = ya + round(pA * 0.42)
+    konum = {}
+    for metinler, y, pp, anlar, renkler in ((["Bizim", "mahallemiz", "vardı;"], yB, pB, B[:3], [METIN2] * 3),
+                                           (["onun", "Annea'sı", "var."], yC, pC, B[3:], [METIN, NIL_KOYU, METIN])):
+        x = (K.W - yazi_olcu(" ".join(metinler), "serif", pp)[0]) / 2
+        for w, an, renk in zip(metinler, anlar, renkler):
+            skel.append((w, x, y, renk, an, "BC", pp))
+            konum[w] = (x, x + yazi_olcu(w, "serif", pp)[0])
+            x += yazi_olcu(w + " ", "serif", pp)[0]
+    m0, m1 = konum["mahallemiz"]
+    rb, rt = yB - pB * 0.86, yB - pB * 1.30                           # çatıların tabanı ve tepesi
+    cati = np.array([(m0 + (m1 - m0) * i / 6, rb if i % 2 == 0 else rt) for i in range(7)], np.float32)
+    c0, c1 = konum["Annea'sı"]
+    uc_ = yC + pC * 0.30
+    tt_ = np.linspace(0, 1, 30)[:, None]
+    yay_ = np.concatenate([c1 + 6 - (c1 - c0 + 12) * tt_, uc_ + pC * 0.16 * 4 * tt_ * (1 - tt_)], 1).astype(np.float32)   # sağdan sola, ortası sarkık
+    g0 = np.array(K.slogan_giris, np.float32)
+    sag = K.W - (46 if d else 150)
+    slogan = [
+        bezier(g0, g0 + (0, 120), (ax0 - 90, ua), (ax0, ua), 24),
+        np.array([(ax0, ua), (ax1, ua)], np.float32),
+        egri([(ax1, ua), (min(ax1 + 70, sag), ua - pA * 0.5), (min(ax1 + 20, sag), rt - 60), ((m0 + ax1) / 2, rt - 110), (m0 - 70, rt - 20), (m0, rb)], 14),
+        cati,
+        egri([(m1, rb), (min(m1 + 90, sag - 20), rb + 10), (sag, (rb + uc_) / 2), (min(c1 + 110, sag), uc_ + 30), yay_[0]], 14),
+        yay_,
+        egri([yay_[-1], (c0 - 90, uc_ - 40), ((c0 + p0[0]) / 2 - 40, (uc_ + p0[1]) / 2), p0 + (40, 40), p0], 14),
+    ]
     solo = 138 * BIRIM * (1.5 if d else 1.6)
     G = np.array(K.logo_merkez, np.float32) + ((DELIK[0] - 0.5) * solo, (DELIK[1] - 0.5) * solo)
     a = np.radians(np.linspace(-90, 90, 28))
     b = np.radians(np.linspace(-90, -270, 28))
-    parcalar = [
+    parcalar = slogan + [
         bezier(p0, p0 + ((-60, 60) if d else (-10, 70)), (cs - 70, u[0]), (cs, u[0]), 24),
         np.array([(cs, u[0]), (cg, u[0])], np.float32),
         np.stack([cg + rx * np.cos(a), u[0] + R + R * np.sin(a)], 1),
@@ -64,22 +123,29 @@ def _duzen(K):
     ]
     P = np.concatenate([np.asarray(p, np.float32) for p in parcalar])
     uz = np.concatenate([[0], np.cumsum([np.linalg.norm(np.diff(p, axis=0), axis=1).sum() + (np.linalg.norm(parcalar[i + 1][0] - p[-1]) if i + 1 < len(parcalar) else 0) for i, p in enumerate(parcalar)])])
-    # çizgi ucunun zaman -> yay uzunluğu anahtarları: her kelime otururken altından geçer
+    # çizgi ucunun ve kuyruğunun zaman -> yay uzunluğu anahtarları (slogan parçaları 0..6, söz parçaları 7..13)
+    U, z = uz, uz[7:] 
     anahtar = [
-        (ARALIK[0], 0), (KB[0], uz[1]), (KB[1], uz[1] + ilk[0] + (x0 - cs)), (KB[1] + 0.40, uz[2]),
-        (KB[2], uz[3]), (KB[3], uz[3] + (cg - x0 - en[1])), (KB[3] + 0.35, uz[4]),
-        (KB[4], uz[5]), (KB[5], uz[5] + ilk[2] + (x0 - cs)), (KB[5] + 0.20, uz[6]), (TOPLAN, uz[7]),
+        (ARALIK[0], 0), (A[0], U[1]), (A[-1], U[1] + 0.62 * (U[2] - U[1])), (A_SON - 0.06, U[2]),
+        (B[1], U[3]), (B[2], U[4]), (B[3] - 0.22, U[4]), (B[4], U[5]), (B[5], U[6]), (Z.SOZ_BAS, U[7]),
+        (KB[0], z[1]), (KB[1], z[1] + ilk[0] + (x0 - cs)), (KB[1] + 0.40, z[2]),
+        (KB[2], z[3]), (KB[3], z[3] + (cg - x0 - en[1])), (KB[3] + 0.35, z[4]),
+        (KB[4], z[5]), (KB[5], z[5] + ilk[2] + (x0 - cs)), (KB[5] + 0.20, z[6]), (TOPLAN, z[7]),
     ]
     T, S = zip(*anahtar)
     assert all(np.diff(T) > 0) and all(np.diff(S) >= 0), anahtar
     uc = PchipInterpolator(T, S)
     geri_cek = KB[5] - 0.05                                           # kuyruk bu andan sonra ucu yakalar
-    kuyruk = PchipInterpolator([ARALIK[0], KB[0] - 0.06, KB[0] + 0.10, geri_cek, TOPLAN], [0, 0, uz[1], uz[1], uz[7] - 44])
+    kuy = [(ARALIK[0], 0), (A[0] - 0.05, 0), (A[0] + 0.12, U[1]), (A_SON - 0.04, U[1]), (B[1] + 0.05, U[3]), (B[3] - 0.26, U[3]),
+           (B[4] + 0.06, U[5]), (B[5] + 0.02, U[5]), (Z.SOZ_BAS, U[7] - 110), (KB[0] + 0.10, z[1]), (geri_cek, z[1]), (TOPLAN, z[7] - 44)]
+    Tk, Sk = zip(*kuy)
+    assert all(np.diff(Tk) > 0) and all(np.diff(Sk) >= 0), kuy
+    kuyruk = PchipInterpolator(Tk, Sk)
     kelime = []                                                       # (metin, x, taban, renk, an, satır)
     for i, s in enumerate(SATIR):
-        kelime.append((s[0], x0, taban[i], MERCAN if s[0] == "gönülden" else METIN, KB[2 * i], i))
-        kelime.append((s[1], x0 + ilk[i], taban[i], METIN, KB[2 * i + 1], i))
-    return dict(P=P, L=float(uz[7]), uc=uc, kuyruk=kuyruk, kelime=kelime, punto=punto, G=G, solo=solo, kal=punto * 0.10)
+        kelime.append((s[0], x0, taban[i], SOMON if s[0] == "gönülden" else METIN, KB[2 * i], i, punto))
+        kelime.append((s[1], x0 + ilk[i], taban[i], METIN, KB[2 * i + 1], i, punto))
+    return dict(P=P, L=float(uz[-1]), uc=uc, kuyruk=kuyruk, kelime=skel + kelime, punto=punto, G=G, solo=solo, kal=punto * 0.10)
 
 
 def _soz_yolu(u, K, D):
@@ -93,15 +159,17 @@ def _soz(t, K, tuval, M, s):
     D = _duzen(K)
     kal = D["kal"] * s
     # yazı: ilk iki satır son kelimeden hemen sonra, son satır vuruştan önce solar
-    son1 = 1 - yumusak(ara(t, KB[5] + 0.12, SOZ_SON + 0.10))
-    son3 = 1 - yumusak(ara(t, SOZ_SON, min(SOZ_SON + 0.20, Z.LOGO_VURUS - 0.04)))
-    for metin, x, y, renk, an, satir in D["kelime"]:
+    sol = {0: 1 - yumusak(ara(t, KB[5] + 0.12, SOZ_SON + 0.10)), 1: 1 - yumusak(ara(t, KB[5] + 0.12, SOZ_SON + 0.10)),
+           2: 1 - yumusak(ara(t, SOZ_SON, min(SOZ_SON + 0.20, Z.LOGO_VURUS - 0.04))),
+           "A": 1 - yumusak(ara(t, A_SON, B[0] + 0.04)), "BC": 1 - yumusak(ara(t, Z.SOZ_BAS - 0.17, Z.SOZ_BAS + 0.12))}
+    for metin, x, y, renk, an, grup, punto in D["kelime"]:
         p = cik(ara(t, an, an + 10 / 60))
-        a = p * (son3 if satir == 2 else son1)
+        a = p * sol[grup]
         if a > 0.004:
-            q = nokta(M, [(x, y + (1 - p) * 0.24 * D["punto"])])[0]
-            yaz(tuval, metin, q[0] + 2 * s, q[1] + (3 + 5 * (1 - p)) * s, "serif", D["punto"], (120, 80, 60), alfa=0.13 * a, olcek=s)   # otururken hafif gölge
-            yaz(tuval, metin, q[0], q[1], "serif", D["punto"], renk, alfa=a, olcek=s)
+            kay = (1 - p) * 0.24 * punto - ((1 - sol[grup]) * 0.35 * punto if grup == "A" else 0)     # ilk slogan yukarı çekilerek yer açar
+            q = nokta(M, [(x, y + kay)])[0]
+            yaz(tuval, metin, q[0] + 2 * s, q[1] + (3 + 5 * (1 - p)) * s, "serif", punto, (120, 80, 60), alfa=0.13 * a, olcek=s)   # otururken hafif gölge
+            yaz(tuval, metin, q[0], q[1], "serif", punto, renk, alfa=a, olcek=s)
     if t < TOPLAN:
         cizgi(tuval, alt_zaman(lambda u: nokta(M, _soz_yolu(u, K, D)), t, 4, 0.6), kal)
 
@@ -180,7 +248,7 @@ def _logo(t, K, tuval, M, s):
               alfa=1 - ara(t, Z.LOGO_VURUS + 0.05, Z.LOGO_VURUS + 0.14), parlama=1 + 0.8 * n * (1 - sis))
 
 
-ETIKET = [("Sor", ADACAYI_ACIK), ("Paylaş", MERCAN_ACIK), ("Takas et", (253, 238, 226)), ("Buluş", (253, 241, 214))]
+ETIKET = [("Sor", NIL), ("Paylaş", YAVRUAGZI), ("Takas et", NIL), ("Buluş", YAVRUAGZI)]
 
 
 def _hap(tuval, cx, cy, w, h, renk, alfa, golge_renk=(120, 80, 55), golge_alfa=0.16):
@@ -197,8 +265,8 @@ def _kapanis(t, K, tuval, M, s):
     cx = 540 if d else 1385
     punto = 84 if d else 104
     y1, y2 = (850, 950) if d else (330, 452)
-    ye, eh, ep = (1062, 86, 42) if d else (548, 76, 38)                 # etiket sırası: merkez y, yükseklik, punto
-    yb, yu = (1220, 1356) if d else (682, 810)
+    ye, eh, ep = (1064, 96, 47) if d else (548, 84, 42)                 # etiket sırası: merkez y, yükseklik, punto
+    yb, yu = (1230, 1366) if d else (688, 814)
     bw, bh = (480, 112) if d else (520, 126)
     for i, (metin, y) in enumerate([("Annelik, birlikte", y1), ("daha kolay.", y2)]):
         p = cik(ara(t, Z.KAPANIS_SLOGAN + 0.27 + i * 0.10, Z.KAPANIS_SLOGAN + 0.57 + i * 0.10))
@@ -224,7 +292,7 @@ def _kapanis(t, K, tuval, M, s):
         q = nokta(M, [(cx, yb)])[0]
         a = cik(ara(p, 0, 0.5))
         golge(tuval, q[0] - bw / 2 * k, q[1] - bh / 2 * k, q[0] + bw / 2 * k, q[1] + bh / 2 * k, bh / 2 * k, bulanik=20, alfa=0.16 * a, dy=14, renk=(170, 70, 50))
-        _hap(tuval, q[0], q[1], bw * k, bh * k, MERCAN, a, golge_renk=(150, 55, 40), golge_alfa=0.30)
+        _hap(tuval, q[0], q[1], bw * k, bh * k, SOMON, a, golge_renk=(150, 55, 40), golge_alfa=0.30)
         yaz(tuval, "Hemen katıl", q[0], q[1] + (16 if d else 20) * k, "karla", 48 if d else 58, BEYAZ, 700, alfa=a, hiza="orta", olcek=k)
     p = cik(ara(t, Z.KAPANIS_BUTON + 0.12, Z.KAPANIS_BUTON + 0.40))
     if p > 0:
