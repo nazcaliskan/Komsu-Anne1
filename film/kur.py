@@ -21,7 +21,11 @@ _mod = {}
 
 def sahne(ad):
     if ad not in _mod:
-        _mod[ad] = __import__(f"sahne_{ad}")
+        try:
+            _mod[ad] = __import__(f"sahne_{ad}")
+        except ModuleNotFoundError:                    # henüz kurulmamış sahne: boş geç
+            import types
+            _mod[ad] = types.SimpleNamespace(ARALIK=(0, 0))
     return _mod[ad]
 
 

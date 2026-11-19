@@ -158,8 +158,9 @@ def _logo(t, K, tuval, M, s):
             ikon_sag = (C[0] + 69 * b * rel + 10 * g - (L0[0] + 162 * b * g)) / g      # ikonun sağ kenarı (yazı pikseli)
             sol = np.clip((xs - ikon_sag) / 24, 0, 1)
             hy = _maskeli(hy, np.broadcast_to(sag * sol, hy.shape[:2]))
-        q = nokta(M, [L0 + g * np.array((162 * b, 14 * b), np.float32)])[0]
-        yapistir(tuval, hy, q[0], q[1], olcek=g * s, capa=(0, 0))
+        # resmî yatay logoda yazı tam 449 birim eninde ve 110 birimlik kutuda dikey ortalı (0,04 birim pay)
+        q = nokta(M, [L0 + g * np.array((162 * b, 14.04 * b), np.float32)])[0]
+        yapistir(tuval, hy, q[0], q[1], olcek=g * s * 449 * b / wy, capa=(0, 0))
     # nefes: çizgi göz deliğinde asılı kısa parlak bir çizgi; vuruşta şişip pine karışır
     if TOPLAN <= t < Z.LOGO_VURUS + 0.14:
         Gq = nokta(M, [D["G"]])[0]
