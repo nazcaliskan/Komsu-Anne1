@@ -1,0 +1,194 @@
+{
+ "kayit": "jessica_1",
+ "satirlar": [
+  {
+   "metin": "Aklına takılan her şey…",
+   "bas": 0.5,
+   "son": 1.882,
+   "kelimeler": [
+    {
+     "k": "Aklına",
+     "bas": 0.5,
+     "kare": 30
+    },
+    {
+     "k": "takılan",
+     "bas": 0.93,
+     "kare": 56
+    },
+    {
+     "k": "her",
+     "bas": 1.301,
+     "kare": 78
+    },
+    {
+     "k": "şey",
+     "bas": 1.545,
+     "kare": 93
+    }
+   ]
+  },
+  {
+   "metin": "bir sokak ötede cevabını bulur.",
+   "bas": 2.67,
+   "son": 4.237,
+   "kelimeler": [
+    {
+     "k": "bir",
+     "bas": 2.67,
+     "kare": 160
+    },
+    {
+     "k": "sokak",
+     "bas": 2.844,
+     "kare": 171
+    },
+    {
+     "k": "ötede",
+     "bas": 3.146,
+     "kare": 189
+    },
+    {
+     "k": "cevabını",
+     "bas": 3.401,
+     "kare": 204
+    },
+    {
+     "k": "bulur",
+     "bas": 3.854,
+     "kare": 231
+    }
+   ]
+  },
+  {
+   "metin": "Tek dokunuş…",
+   "bas": 5.4,
+   "son": 6.132,
+   "kelimeler": [
+    {
+     "k": "Tek",
+     "bas": 5.4,
+     "kare": 324
+    },
+    {
+     "k": "dokunuş",
+     "bas": 5.667,
+     "kare": 340
+    }
+   ]
+  },
+  {
+   "metin": "ve mahallen yanında.",
+   "bas": 6.6,
+   "son": 7.691,
+   "kelimeler": [
+    {
+     "k": "ve",
+     "bas": 6.6,
+     "kare": 396
+    },
+    {
+     "k": "mahallen",
+     "bas": 6.75,
+     "kare": 405
+    },
+    {
+     "k": "yanında",
+     "bas": 7.203,
+     "kare": 432
+    }
+   ]
+  },
+  {
+   "metin": "Küçülen tulumu atma; bir sokak ötede Fatma.",
+   "bas": 10.4,
+   "son": 13.326,
+   "kelimeler": [
+    {
+     "k": "Küçülen",
+     "bas": 10.4,
+     "kare": 624
+    },
+    {
+     "k": "tulumu",
+     "bas": 10.865,
+     "kare": 652
+    },
+    {
+     "k": "atma",
+     "bas": 11.143,
+     "kare": 669
+    },
+    {
+     "k": "bir",
+     "bas": 12.107,
+     "kare": 726
+    },
+    {
+     "k": "sokak",
+     "bas": 12.304,
+     "kare": 738
+    },
+    {
+     "k": "ötede",
+     "bas": 12.606,
+     "kare": 756
+    },
+    {
+     "k": "Fatma",
+     "bas": 12.862,
+     "kare": 772
+    }
+   ]
+  },
+  {
+   "metin": "Anneden anneye, elden ele, gönülden gönüle.",
+   "bas": 13.5,
+   "son": 16.937,
+   "kelimeler": [
+    {
+     "k": "Anneden",
+     "bas": 13.5,
+     "kare": 810
+    },
+    {
+     "k": "anneye",
+     "bas": 14.023,
+     "kare": 841
+    },
+    {
+     "k": "elden",
+     "bas": 14.917,
+     "kare": 895
+    },
+    {
+     "k": "ele",
+     "bas": 15.323,
+     "kare": 919
+    },
+    {
+     "k": "gönülden",
+     "bas": 15.985,
+     "kare": 959
+    },
+    {
+     "k": "gönüle",
+     "bas": 16.496,
+     "kare": 990
+    }
+   ]
+  },
+  {
+   "metin": "Annea.",
+   "bas": 17.5,
+   "son": 18.08,
+   "kelimeler": [
+    {
+     "k": "Annea",
+     "bas": 17.5,
+     "kare": 1050
+    }
+   ]
+  }
+ ]
+}
