@@ -491,7 +491,7 @@ def cizgi(dst, yol, kalinlik=10, alfa=1.0, renk=MERCAN, parlama=1.0, ornekler=No
         h = bulanik(acc, hale) * 0.42 * parlama * alfa
         roi[..., :3] += (np.array([255, 150, 120], np.float32) - roi[..., :3]) * h[..., None]
     a = acc * alfa
-    cekirdek = bulanik(acc, max(1.0, kmax * 0.16)) ** 3 * 0.16      # içte hafif açık çekirdek
+    cekirdek = bulanik(acc, max(1.0, min(kmax, 120) * 0.16)) ** 3 * 0.16 * min(1.0, 60 / kmax)   # içte hafif açık çekirdek (kalın dolguda söner)
     rgb = np.array(renk, np.float32) + (255 - np.array(renk, np.float32)) * cekirdek[..., None]
     roi[..., :3] = roi[..., :3] * (1 - a[..., None]) + rgb * a[..., None]
     if dst.shape[2] == 4:
