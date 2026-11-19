@@ -1,22 +1,24 @@
-"""S6 · Söz, S7 · Logo, S8 · Kapanış kartı (13.30–21.20).
+"""Söz, logo ve kapanış kartı (Z.SOZ_BAS – Z.SURE). Tüm anlar ses/zaman.py sabitlerinden ve seslendirme kilidinden gelir.
 
-S6: çizgi K.s6_bas'tan girer, üç satırın altından yılan gibi akan tek bir alt çizgi olur; kelimeler
-    seslendirmenin kilit dosyasındaki anlarda oturur. Sonunda çizgi toplanıp mercan pinin göz deliğine iner.
-S7: vuruşta (16.80) çizgi resmî ikonun mercan yarısına dönüşür (dairesel maske), yeşil yarı soldan gelip
-    yaslanır, "Annea" yazısı açılır. Logo katmanları yalnızca taşınır, ölçeklenir, soldurulur, maskelenir.
-S8: kapanış kartı."""
+Söz : çizgi K.s6_bas'tan girer, üç satırın altından yılan gibi akan tek bir alt çizgi olur; kelimeler
+      seslendirmenin kilit dosyasındaki anlarda oturur. Satır bitince yazı solar; çizgi Z.NEFES'te toplanmış,
+      mercan pinin göz deliğinin olacağı yerde asılıdır.
+Logo: Z.LOGO_VURUS'ta çizgi resmî ikonun mercan yarısına dönüşür (dairesel maske), yeşil yarı soldan gelip
+      yaslanır, "Annea" yazısı açılır. Logo katmanları yalnızca taşınır, ölçeklenir, soldurulur, maskelenir.
+Kart: slogan, uygulamanın dört artısı (hap etiketler), "Hemen katıl" ve adres."""
 import json, functools
 import numpy as np
 from scipy.interpolate import PchipInterpolator
-from ortak import (Z, KOK, METIN, METIN2, MERCAN, BEYAZ, afin, nokta, cizgi, alt_zaman, yol_parca, bezier, yazi_olcu,
+from ortak import (Z, KOK, METIN, METIN2, MERCAN, BEYAZ, ADACAYI_ACIK, MERCAN_ACIK, cizgi_ince, afin, nokta, cizgi, alt_zaman, yol_parca, bezier, yazi_olcu,
                    yaz, marka, yapistir, katman_bas, kutu, golge, halka, ara, yumusak, cik, gir_cik, geri, kar)
 
-ARALIK = (Z.SAHNE["S6"], Z.SURE)
+ARALIK = (Z.SOZ_BAS, Z.SURE)
 
-_KILIT = json.load(open(f"{KOK}/cikti/ses/kilit_lilyv3_1.json"))
-KB = [k["bas"] for k in _KILIT["satirlar"][5]["kelimeler"]]          # altı kelimenin oturma anları (sn)
+_SOZ = next(x for x in json.load(open(f"{KOK}/cikti/ses/kilit_lilyv3_5.json"))["satirlar"] if x["metin"].startswith("Anneden"))
+KB = [k["bas"] for k in _SOZ["kelimeler"]]
+SOZ_SON = _SOZ["son"]                                                  # satırın seste bittiği an          # altı kelimenin oturma anları (sn)
 SATIR = [["Anneden", "anneye,"], ["elden", "ele,"], ["gönülden", "gönüle."]]
-TOPLAN = Z.LOGO_VURUS - 0.10                                          # çizginin toplanmayı bitirdiği an
+TOPLAN = Z.NEFES                                                           # çizginin toplanmayı bitirdiği an
 BIRIM = 1.5                                                            # yatay logodaki 1 birim = 1,5 px (ikon 207, yazı 165 px)
 DELIK = (0.7297, 0.3759)                                               # mercan pinin göz deliği (ikon tuvaline oranla)
 
@@ -91,13 +93,14 @@ def _soz(t, K, tuval, M, s):
     D = _duzen(K)
     kal = D["kal"] * s
     # yazı: ilk iki satır son kelimeden hemen sonra, son satır vuruştan önce solar
-    son1 = 1 - yumusak(ara(t, KB[5] - 0.02, KB[5] + 0.30))
-    son3 = 1 - yumusak(ara(t, KB[5] + 0.24, Z.LOGO_VURUS - 0.03))
+    son1 = 1 - yumusak(ara(t, KB[5] + 0.12, SOZ_SON + 0.10))
+    son3 = 1 - yumusak(ara(t, SOZ_SON, min(SOZ_SON + 0.20, Z.LOGO_VURUS - 0.04)))
     for metin, x, y, renk, an, satir in D["kelime"]:
         p = cik(ara(t, an, an + 10 / 60))
         a = p * (son3 if satir == 2 else son1)
         if a > 0.004:
             q = nokta(M, [(x, y + (1 - p) * 0.24 * D["punto"])])[0]
+            yaz(tuval, metin, q[0] + 2 * s, q[1] + (3 + 5 * (1 - p)) * s, "serif", D["punto"], (120, 80, 60), alfa=0.13 * a, olcek=s)   # otururken hafif gölge
             yaz(tuval, metin, q[0], q[1], "serif", D["punto"], renk, alfa=a, olcek=s)
     if t < TOPLAN:
         cizgi(tuval, alt_zaman(lambda u: nokta(M, _soz_yolu(u, K, D)), t, 4, 0.6), kal)
@@ -109,7 +112,7 @@ def _kilit(t, K):
     e = gir_cik(ara(t, Z.KAPANIS_SLOGAN, Z.KAPANIS_SLOGAN + 0.50))
     c0 = np.array(K.logo_merkez, np.float32)
     if K.dikey:
-        return kar(c0, np.array((540, 640), np.float32), e), 1.0
+        return kar(c0, np.array((540, 600), np.float32), e), 1.0
     return kar(c0, np.array((500, 540), np.float32), e), kar(1.0, 0.9, e)
 
 
@@ -169,33 +172,59 @@ def _logo(t, K, tuval, M, s):
     if TOPLAN <= t < Z.LOGO_VURUS + 0.14:
         Gq = nokta(M, [D["G"]])[0]
         n = ara(t, TOPLAN, Z.LOGO_VURUS)
-        yarim = kar(22, 3, yumusak(n)) * s
+        yarim = kar(22, 5, yumusak(ara(t, Z.LOGO_VURUS - 0.12, Z.LOGO_VURUS))) * s
         sis = cik(ara(t, Z.LOGO_VURUS - 0.03, Z.LOGO_VURUS + 0.06))
         kal = kar(D["kal"], 2 * 0.083 * D["solo"] * 1.25, sis) * s
         dy = 2.5 * np.sin((t - TOPLAN) * 9) * (1 - sis)
-        cizgi(tuval, np.array([(Gq[0] - yarim + 13 * s, Gq[1] + dy), (Gq[0] + yarim + 13 * s * (1 - yumusak(n)), Gq[1] + dy)]), kal,
+        cizgi(tuval, np.array([(Gq[0] - yarim + 13 * s, Gq[1] + dy), (Gq[0] + yarim + 13 * s, Gq[1] + dy)]), kal,
               alfa=1 - ara(t, Z.LOGO_VURUS + 0.05, Z.LOGO_VURUS + 0.14), parlama=1 + 0.8 * n * (1 - sis))
+
+
+ETIKET = [("Sor", ADACAYI_ACIK), ("Paylaş", MERCAN_ACIK), ("Takas et", (253, 238, 226)), ("Buluş", (253, 241, 214))]
+
+
+def _hap(tuval, cx, cy, w, h, renk, alfa, golge_renk=(120, 80, 55), golge_alfa=0.16):
+    """Hap biçimli yüzey: yumuşak temas gölgesi + üst kenarda ince ışık (hafif fiziksel ipucu)."""
+    x0, y0, x1, y1 = cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2
+    golge(tuval, x0 + 3, y0, x1 - 3, y1, h / 2, bulanik=max(3, h * 0.10), alfa=golge_alfa * alfa, dy=h * 0.07, renk=golge_renk)
+    kutu(tuval, x0, y0, x1, y1, h / 2, renk, alfa)
+    if w > h * 1.2:
+        cizgi_ince(tuval, np.array([(x0 + h * 0.42, y0 + 2.2), (x1 - h * 0.42, y0 + 2.2)], np.float32), BEYAZ, 2, 0.5 * alfa)
 
 
 def _kapanis(t, K, tuval, M, s):
     d = K.dikey
     cx = 540 if d else 1385
     punto = 84 if d else 104
-    y1, y2 = (900, 1000) if d else (388, 510)
-    yb, yu = (1160, 1300) if d else (655, 786)
+    y1, y2 = (850, 950) if d else (330, 452)
+    ye, eh, ep = (1062, 86, 42) if d else (548, 76, 38)                 # etiket sırası: merkez y, yükseklik, punto
+    yb, yu = (1220, 1356) if d else (682, 810)
     bw, bh = (480, 112) if d else (520, 126)
     for i, (metin, y) in enumerate([("Annelik, birlikte", y1), ("daha kolay.", y2)]):
         p = cik(ara(t, Z.KAPANIS_SLOGAN + 0.27 + i * 0.10, Z.KAPANIS_SLOGAN + 0.57 + i * 0.10))
         if p > 0:
             q = nokta(M, [(cx, y + (1 - p) * 26)])[0]
             yaz(tuval, metin, q[0], q[1], "serif", punto, METIN, alfa=p, hiza="orta", olcek=s)
+    # uygulamanın dört artısı: slogan ile buton arasında sırayla, yaylı girer
+    enler = [yazi_olcu(m, "karla", ep, 700)[0] + eh * 0.72 for m, _ in ETIKET]
+    bosluk = 16 if d else 14
+    x = cx - (sum(enler) + bosluk * 3) / 2
+    for i, ((metin, renk), w) in enumerate(zip(ETIKET, enler)):
+        p = ara(t, Z.KAPANIS_SLOGAN + 0.30 + i * 0.04, Z.KAPANIS_SLOGAN + 0.62 + i * 0.04)
+        if p > 0:
+            k = (0.72 + 0.28 * geri(p, 2.0)) * s
+            a = cik(ara(p, 0, 0.45))
+            q = nokta(M, [(x + w / 2, ye + (1 - cik(p)) * 18)])[0]
+            _hap(tuval, q[0], q[1], w * k, eh * k, renk, a, golge_alfa=0.13)
+            yaz(tuval, metin, q[0], q[1] + ep * 0.33 * k, "karla", ep, METIN, 700, alfa=a, hiza="orta", olcek=k)
+        x += w + bosluk
     p = ara(t, Z.KAPANIS_BUTON, Z.KAPANIS_BUTON + 0.34)
     if p > 0:
         k = (0.80 + 0.20 * geri(p, 1.8)) * s
         q = nokta(M, [(cx, yb)])[0]
         a = cik(ara(p, 0, 0.5))
-        golge(tuval, q[0] - bw / 2 * k, q[1] - bh / 2 * k, q[0] + bw / 2 * k, q[1] + bh / 2 * k, bh / 2 * k, bulanik=18, alfa=0.20 * a, dy=10, renk=(170, 70, 50))
-        kutu(tuval, q[0] - bw / 2 * k, q[1] - bh / 2 * k, q[0] + bw / 2 * k, q[1] + bh / 2 * k, bh / 2 * k, MERCAN, a)
+        golge(tuval, q[0] - bw / 2 * k, q[1] - bh / 2 * k, q[0] + bw / 2 * k, q[1] + bh / 2 * k, bh / 2 * k, bulanik=20, alfa=0.16 * a, dy=14, renk=(170, 70, 50))
+        _hap(tuval, q[0], q[1], bw * k, bh * k, MERCAN, a, golge_renk=(150, 55, 40), golge_alfa=0.30)
         yaz(tuval, "Hemen katıl", q[0], q[1] + (16 if d else 20) * k, "karla", 48 if d else 58, BEYAZ, 700, alfa=a, hiza="orta", olcek=k)
     p = cik(ara(t, Z.KAPANIS_BUTON + 0.12, Z.KAPANIS_BUTON + 0.40))
     if p > 0:

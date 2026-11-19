@@ -17,11 +17,15 @@ OX = OY = 1700                                          # doku kayması: dünya 
 DOKU = 5900
 YUVA = [(40, 40), (330, 40), (40, 330), (330, 330)]     # ada içindeki dört ev yuvası (210x210)
 
-SOKAK_RENK = (255, 252, 248)
-ADA_RENK = (245, 235, 225)
-ADA_KENAR = (234, 221, 208)
-BAHCE = (236, 238, 224)
-TABAN = (233, 219, 205)
+SOKAK_RENK = (236, 229, 221)        # açık, sıcak asfalt
+SERIT = (250, 246, 240)             # şerit ve yaya geçidi çizgileri
+KALDIRIM = (252, 247, 241)
+KALDIRIM_GOLGE = (212, 201, 190)
+ADA_RENK = (244, 234, 223)
+BAHCE = (229, 234, 214)
+TABAN = (231, 217, 203)
+GUNES = (1.0, 0.72)                 # güneş sol üstte: gölgeler sağ alta düşer (yükseklik başına)
+GOLGE_RENK = (92, 70, 58)
 CATILAR = [(247, 201, 168), (226, 150, 128), (250, 240, 228), (201, 220, 206), (240, 214, 170), (232, 176, 150)]
 DUVAR = (247, 233, 219)
 
@@ -90,28 +94,55 @@ def _evler():
 
 @functools.lru_cache(maxsize=1)
 def _doku():
-    """Değişmeyen zemin dokusu: sokaklar, adalar, bahçeler, ev tabanları, ağaçlar."""
+    """Değişmeyen zemin dokusu: asfalt, şeritler, yaya geçitleri, kaldırımlar, bahçeler, ağaçlar ve gölgeleri."""
     T = np.empty((DOKU, DOKU, 3), np.uint8)
     T[:] = SOKAK_RENK
     def P(pts):
         return np.round((np.asarray(pts, np.float32) + (OX, OY)) * 16).astype(np.int32)
     def N(x, y):
         return (int(round((x + OX) * 16)), int(round((y + OY) * 16)))
-    for sx in SOKAKLAR[:-1]:
+    def dolu(x0, y0, x1, y1, renk, r=0):
+        cv2.fillPoly(T, [P(_yd_noktalar(x0, y0, x1, y1, r))], renk, cv2.LINE_AA, 4)
+    lo, hi = SOKAKLAR[0], SOKAKLAR[-1]
+    for sk in SOKAKLAR:                                   # kesik orta şerit (kavşaklarda yok)
+        for u in range(lo, hi, 64):
+            if min(abs(u + 17 - k) for k in SOKAKLAR) > YARI + 70:
+                dolu(sk - 2.5, u, sk + 2.5, u + 34, SERIT, 2)
+                dolu(u, sk - 2.5, u + 34, sk + 2.5, SERIT, 2)
+    for sx in SOKAKLAR:                                   # yaya geçitleri: her kavşağın dört kolunda
+        for sy in SOKAKLAR:
+            for k in range(-2, 3):
+                o = k * 22
+                dolu(sx + o - 6, sy - YARI - 52, sx + o + 6, sy - YARI - 12, SERIT, 2)
+                dolu(sx + o - 6, sy + YARI + 12, sx + o + 6, sy + YARI + 52, SERIT, 2)
+                dolu(sx - YARI - 52, sy + o - 6, sx - YARI - 12, sy + o + 6, SERIT, 2)
+                dolu(sx + YARI + 12, sy + o - 6, sx + YARI + 52, sy + o + 6, SERIT, 2)
+    for sx in SOKAKLAR[:-1]:                              # adalar: kaldırım (hafif yüksek, kenar gölgeli) + iç zemin
         for sy in SOKAKLAR[:-1]:
             bx, by = sx + YARI, sy + YARI
-            q = _yd_noktalar(bx, by, bx + 580, by + 580, 46)
-            cv2.fillPoly(T, [P(q)], ADA_RENK, cv2.LINE_AA, 4)
-            cv2.polylines(T, [P(q)], True, ADA_KENAR, 4, cv2.LINE_AA, 4)
+            dolu(bx + 5, by + 6, bx + 585, by + 586, KALDIRIM_GOLGE, 46)
+            dolu(bx, by, bx + 580, by + 580, KALDIRIM, 46)
+            dolu(bx + 24, by + 24, bx + 556, by + 556, ADA_RENK, 30)
     for x0, y0, x1, y1, yuk, cati, oz in _evler():
-        cv2.fillPoly(T, [P(_yd_noktalar(x0 - 22, y0 - 22, x1 + 22, y1 + 22, 26))], BAHCE, cv2.LINE_AA, 4)
-        cv2.fillPoly(T, [P(_yd_noktalar(x0, y0, x1, y1, 6))], TABAN, cv2.LINE_AA, 4)
-    # kapı önü patikaları (iki biçimin A/B evleri)
+        dolu(x0 - 22, y0 - 22, x1 + 22, y1 + 22, BAHCE, 26)
+        dolu(x0, y0, x1, y1, TABAN, 6)
     for x0, y0, x1, y1 in [(770, 1880, 940, 1930), (1470, 900, 1520, 940), (480, 900, 530, 940), (1760, 480, 1800, 530)]:
-        cv2.fillPoly(T, [P(_yd_noktalar(x0, y0, x1, y1, 8))], SOKAK_RENK, cv2.LINE_AA, 4)
-    # ağaçlar: adaların orta boşluklarında
+        dolu(x0, y0, x1, y1, KALDIRIM, 8)                 # kapı önü patikaları (iki biçimin A/B evleri)
+    # yüzey dokusu: ince tane + iri lekeler (asfalt/taş hissi)
+    r = np.random.default_rng(9)
+    n = 1024
+    def sarmal(sigma):                                     # döşenebilir (kenarları saran) bulanık gürültü
+        p = int(sigma * 4) + 2
+        g = np.pad(r.standard_normal((n, n)).astype(np.float32), p, mode="wrap")
+        return cv2.GaussianBlur(g, (0, 0), sigma)[p:-p, p:-p]
+    tane, leke = sarmal(0.8), sarmal(26)
+    doku = (tane / tane.std() * 2.2 + leke / leke.std() * 2.6)[..., None]
+    for y in range(0, DOKU, n):
+        for x in range(0, DOKU, n):
+            blok = T[y:y + n, x:x + n]
+            blok[:] = np.clip(blok.astype(np.float32) + doku[:blok.shape[0], :blok.shape[1]], 0, 255).astype(np.uint8)
+    # ağaçlar: uzun yumuşak gölge + hacimli tepe (açık üst-sol, koyu alt-sağ)
     r = np.random.default_rng(5)
-    G = np.zeros((DOKU, DOKU), np.uint8)
     agac = []
     for sx in SOKAKLAR[:-1]:
         for sy in SOKAKLAR[:-1]:
@@ -121,14 +152,21 @@ def _doku():
                     agac.append((bx + 290 + r.normal(0, 5), by + r.uniform(50, 530), r.uniform(24, 36)))
                 else:
                     agac.append((bx + r.uniform(50, 530), by + 290 + r.normal(0, 5), r.uniform(24, 36)))
+    G = np.zeros((DOKU, DOKU), np.uint8)
     for x, y, rr in agac:
-        cv2.circle(G, N(x + 9, y + 11), int(rr * 16), 255, -1, cv2.LINE_AA, 4)
-    G = cv2.GaussianBlur(G, (0, 0), 5)
-    T[:] = (T.astype(np.float32) * (1 - G[..., None] / 255 * 0.16)).astype(np.uint8)
+        cv2.line(G, N(x + 8, y + 6), N(x + rr * 1.9 * GUNES[0], y + rr * 1.9 * GUNES[1]), 255, int(rr * 1.7), cv2.LINE_AA, 4)
+    G = cv2.GaussianBlur(G, (0, 0), 7)
+    for y in range(0, DOKU, n):
+        blok = T[y:y + n]
+        g = G[y:y + n, :, None].astype(np.float32) / 255 * 0.24
+        blok[:] = (blok * (1 - g) + np.array(GOLGE_RENK, np.float32) * g).astype(np.uint8)
     for x, y, rr in agac:
-        cv2.circle(T, N(x, y), int(rr * 16), (139, 170, 148), -1, cv2.LINE_AA, 4)
-        cv2.circle(T, N(x - rr * 0.22, y - rr * 0.24), int(rr * 0.62 * 16), (163, 191, 169), -1, cv2.LINE_AA, 4)
-    return cv2.GaussianBlur(T, (0, 0), 0.6)
+        cv2.circle(T, N(x + rr * 0.06, y + rr * 0.06), int(rr * 16), (104, 138, 116), -1, cv2.LINE_AA, 4)
+        cv2.circle(T, N(x - rr * 0.10, y - rr * 0.10), int(rr * 0.86 * 16), (132, 164, 141), -1, cv2.LINE_AA, 4)
+        for dx, dy, k in [(-0.34, -0.30, 0.46), (0.10, -0.42, 0.34), (-0.42, 0.12, 0.30)]:
+            cv2.circle(T, N(x + rr * dx, y + rr * dy), int(rr * k * 16), (158, 187, 163), -1, cv2.LINE_AA, 4)
+        cv2.circle(T, N(x - rr * 0.40, y - rr * 0.36), int(rr * 0.20 * 16), (184, 207, 186), -1, cv2.LINE_AA, 4)
+    return cv2.GaussianBlur(T, (0, 0), 0.7)
 
 
 # ------------------------------------------------------------------ zaman eğrileri
@@ -173,24 +211,62 @@ def _ev_ciz(dst, M, z, ev, f):
     for i in range(4):
         a, b = taban[i], taban[(i + 1) % 4]
         n = (a + b) / 2 - orta
-        ny = n[1] / (np.linalg.norm(n) + 1e-6)
-        if ny > -0.15:
-            kenarlar.append(((a[1] + b[1]) / 2, i, ny))
-    for _, i, ny in sorted(kenarlar):
+        n = n / (np.linalg.norm(n) + 1e-6)
+        if n[1] > -0.15:
+            kenarlar.append(((a[1] + b[1]) / 2, i, n))
+    for _, i, n in sorted(kenarlar, key=lambda e: e[0]):
         a, b = taban[i], taban[(i + 1) % 4]
-        ua, ub = ust[i], ust[(i + 1) % 4]
-        cokgen(dst, np.array([a, b, ub, ua]), _ton(DUVAR, 0.86 + 0.12 * ny))
-        if ny > 0.8 and h > 14:                                  # güney duvarı: kapı ve pencereler
-            def dort(u0, u1, v0, v1, renk):
-                p = lambda u, v: a + (b - a) * u + (ua - a) * v
-                cokgen(dst, np.array([p(u0, v0), p(u1, v0), p(u1, v1), p(u0, v1)]), renk)
-            dort(0.42, 0.58, 0.0, 0.58, (150, 172, 156) if oz == "B" else (196, 122, 100))
-            dort(0.12, 0.30, 0.30, 0.70, (255, 243, 212)); dort(0.70, 0.88, 0.30, 0.70, (255, 243, 212))
-    sacak = orta - (0, h) + (ust - (orta - (0, h))) * 1.07
-    cokgen(dst, sacak, _ton(cati, 0.94))
+        ua = ust[i]
+        p = lambda u, v: a + (b - a) * u + (ua - a) * v
+        def dort(u0, u1, v0, v1, renk, alfa=1.0):
+            cokgen(dst, np.array([p(u0, v0), p(u1, v0), p(u1, v1), p(u0, v1)]), renk, alfa)
+        isik = 0.90 + 0.05 * n[1] - 0.10 * max(n[0], 0) + 0.06 * max(-n[0], 0)     # güneş solda: sola bakan yüz aydınlık
+        dort(0, 1, 0, 1, _ton(DUVAR, isik))
+        dort(0, 1, 0.84, 1, GOLGE_RENK, 0.16)                    # saçak gölgesi
+        dort(0, 1, 0, 0.16, GOLGE_RENK, 0.10)                    # duvar dibinde ortam kararması
+        if n[1] > 0.8 and h > 14:                                # güney duvarı: kapı ve pencereler
+            dort(0.42, 0.58, 0.0, 0.58, (142, 166, 149) if oz == "B" else (186, 112, 92))
+            dort(0.42, 0.58, 0.52, 0.58, GOLGE_RENK, 0.22)
+            for u0 in (0.12, 0.70):
+                dort(u0 - 0.012, u0 + 0.192, 0.25, 0.30, _ton(DUVAR, 0.78))          # denizlik
+                dort(u0, u0 + 0.18, 0.30, 0.70, (255, 236, 190))                     # sıcak iç ışık
+                cokgen(dst, np.array([p(u0, 0.70), p(u0 + 0.13, 0.70), p(u0, 0.44)]), (255, 250, 232), 0.85)   # cam yansıması
+    tepe = orta - (0, h)
+    sacak = tepe + (ust - tepe) * 1.08
     m01, m32 = (sacak[0] + sacak[3]) / 2, (sacak[1] + sacak[2]) / 2
-    cokgen(dst, np.array([sacak[0], sacak[1], m32, m01]), cati)
-    cizgi_ince(dst, np.array([m01, m32]), _ton(cati, 0.86), max(1.5, 2.5 * z), 0.9)
+    aydin, golgeli = _ton(cati, 1.04), _ton(cati, 0.87)
+    cokgen(dst, np.array([sacak[0], sacak[1], m32, m01]), aydin)             # ışık alan yüz
+    cokgen(dst, np.array([m01, m32, sacak[2], sacak[3]]), golgeli)           # gölgede kalan yüz
+    kal = max(1.2, 1.7 * z)
+    for j in (1, 2, 3):                                                      # kiremit sıraları
+        k = j / 4
+        cizgi_ince(dst, np.array([sacak[0] + (m01 - sacak[0]) * k, sacak[1] + (m32 - sacak[1]) * k]), _ton(aydin, 0.93), kal, 0.75)
+        cizgi_ince(dst, np.array([m01 + (sacak[3] - m01) * k, m32 + (sacak[2] - m32) * k]), _ton(golgeli, 0.92), kal, 0.75)
+    cizgi_ince(dst, np.array([m01, m32]), _ton(cati, 1.12), max(1.5, 2.6 * z), 0.9)   # mahya
+    if (x0 * 3 + y0) % 3 == 0 and h > 20:                                    # baca
+        c0 = sacak[0] + (sacak[1] - sacak[0]) * 0.70 + (sacak[3] - sacak[0]) * 0.22
+        e1, e2 = (sacak[1] - sacak[0]) * 0.11, (sacak[3] - sacak[0]) * 0.11
+        yk = np.array([0, -h * 0.16])
+        cokgen(dst, np.array([c0 + e2, c0 + e1 + e2, c0 + e1 + e2 + (h * 0.20, h * 0.14), c0 + e2 + (h * 0.20, h * 0.14)]), GOLGE_RENK, 0.22)
+        cokgen(dst, np.array([c0 + e2, c0 + e1 + e2, c0 + e1 + e2 + yk, c0 + e2 + yk]), _ton(DUVAR, 0.82))
+        cokgen(dst, np.array([c0 + yk, c0 + e1 + yk, c0 + e1 + e2 + yk, c0 + e2 + yk]), _ton(DUVAR, 0.98))
+
+
+@functools.lru_cache(maxsize=4)
+def _izgara(W, H):
+    y, x = np.mgrid[0:H // 8, 0:W // 8].astype(np.float32)
+    return x * 8 + 4, y * 8 + 4
+
+
+def _alan_derinligi(tuval, merkez, guc):
+    """Sığ alan derinliği: odak merkezinden uzaklaştıkça kenarlar yumuşar."""
+    H, W = tuval.shape[:2]
+    x, y = _izgara(W, H)
+    d = np.hypot(x - merkez[0], y - merkez[1]) / (0.5 * np.hypot(W, H))
+    m = np.clip((d - 0.30) / 0.62, 0, 1) ** 1.4 * guc
+    m = cv2.resize(m, (W, H), interpolation=cv2.INTER_LINEAR)[..., None]
+    bl = bulanik(tuval, 3.0 + 5.0 * guc)
+    tuval[:] = (tuval * (1 - m) + bl * m + 0.5).astype(np.uint8)
 
 
 # ------------------------------------------------------------------ sahne
@@ -213,13 +289,14 @@ def ciz(t, K, tuval):
             if ev[6] == "A":
                 t0 = Z.EVLER[0]
             gorunen.append((nokta(M, [[ev[0], ev[3]], [ev[2], ev[3]]])[:, 1].max(), ev, _yukselme(t, t0)))
-    for _, ev, f in gorunen:                                     # gölgeler
+    for _, ev, f in gorunen:                                     # tek yönlü güneş: uzun yumuşak gölge + dip kararması
         if f > 0.02:
             x0, y0, x1, y1, yuk = ev[:5]
             k = np.array([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], np.float32)
-            g = np.concatenate([k, k + (yuk * f * 0.50, yuk * f * 0.34)])
+            g = np.concatenate([k, k + (yuk * f * GUNES[0], yuk * f * GUNES[1])])
             hull = cv2.convexHull(nokta(M, g)).reshape(-1, 2)
-            cokgen(tuval, hull, (120, 84, 60), 0.15, bulanik=5 * z)
+            cokgen(tuval, hull, GOLGE_RENK, 0.21, bulanik=6 * z)
+            cokgen(tuval, nokta(M, [[x0 - 9, y0 - 9], [x1 + 9, y0 - 9], [x1 + 9, y1 + 9], [x0 - 9, y1 + 9]]), GOLGE_RENK, 0.14 * min(1, f), bulanik=7 * z)
     for _, ev, f in sorted(gorunen, key=lambda e: e[0]):
         _ev_ciz(tuval, M, z, ev, f)
 
@@ -231,14 +308,17 @@ def ciz(t, K, tuval):
         dy = -(1 - geri(dus, 1.4)) * 300 - 28 * z * np.sin(np.pi * ara(t, Z.YESIL_PIN, Z.YESIL_PIN + 0.32))
         ez = 1 - 0.13 * np.sin(np.pi * ara(t, 8.72, 8.98)) + 0.08 * np.sin(np.pi * ara(t, Z.YESIL_PIN, Z.YESIL_PIN + 0.32))
         a_pin = min(1.0, dus * 4)
-        golge_a = 0.20 * a_pin * (1 - min(1, -dy / 200))
-        e = np.linspace(0, 2 * np.pi, 28, endpoint=False)
-        cokgen(tuval, np.stack([px + 6 * z + 30 * z * np.cos(e), py + 4 * z + 11 * z * np.sin(e)], 1), (110, 80, 60), golge_a, bulanik=3 * z)
+        yer = max(0.0, 1 - (-dy) / 260)
+        cokgen(tuval, np.array([(px - 9 * z, py), (px + 9 * z, py + 4 * z), (px + boy * 0.80, py + boy * 0.50), (px + boy * 0.62, py + boy * 0.22)]) + (0, 0),
+               GOLGE_RENK, 0.26 * a_pin * yer, bulanik=4 * z)
         for i in range(3):
             x = ara(t, Z.YESIL_PIN + 0.09 * i, Z.YESIL_PIN + 0.09 * i + 0.62)
             if 0 < x < 1:
                 halka(tuval, px, py - 4 * z, (18 + 120 * cik(x, 2)) * z, (1 - x) * 0.75, ADACAYI, kalinlik=max(2, 5 * z * (1 - x * 0.5)))
         pin(tuval, px, py + dy, boy, ADACAYI, a_pin, olcek_x=2 - ez, olcek_y=ez, delik=(250, 244, 236))
+
+    # sığ alan derinliği: hep hafif, kapıya itişte belirgin
+    _alan_derinligi(tuval, s, 0.38 + 0.62 * yumusak(ara(t, 9.55, 10.1)))
 
     # kapıya doğru itiş: yakınlaşma bulanıklığı (çizgi ve kart net kalır)
     guc = 0.11 * gir(ara(t, 9.72, 10.25), 1.6)
@@ -256,18 +336,18 @@ def ciz(t, K, tuval):
         else:
             cizgi(tuval, yol(t), kal)
 
-    # cam kart: "Fatma · bir sokak ötede"
-    a = cik(ara(t, Z.CAM_KART, Z.CAM_KART + 0.24))
+    # cam kart: "Defne · bir sokak ötede" (9.20'de açılır, geçişe kadar okunur)
+    a = cik(ara(t, Z.CAM_KART, Z.CAM_KART + 0.26))
     if a > 0.01:
-        metin, boyut = "Fatma · bir sokak ötede", 42
+        metin, boyut = "Defne · bir sokak ötede", 46
         mw, asc, desc = yazi_olcu(metin, "nunito", boyut, 800)
-        av = 76
-        w, h = 26 + av + 20 + mw + 34, 112
+        av = 80
+        w, h = 28 + av + 22 + mw + 38, 120
         cx = float(np.clip(px, 44 + w / 2, K.W - 44 - w / 2))
-        y1 = py - boy - 26 + (1 - a) * 26
-        y1 = max(y1, 150 + h) if K.dikey else max(y1, 60 + h)
+        y1 = py - boy - 30 + (1 - a) * 26
+        y1 = max(y1, (150 if K.dikey else 60) + h)
         x0, y0 = cx - w / 2, y1 - h
-        cam_kart(tuval, x0, y0, x0 + w, y1, r=34, alfa=a, opak=0.80)
-        yapistir(tuval, avatar(av, "b"), x0 + 26 + av / 2, y0 + h / 2, alfa=a)
-        yaz(tuval, metin, x0 + 26 + av + 20, y0 + h / 2 + asc * 0.36, "nunito", boyut, METIN, 800, alfa=a)
+        cam_kart(tuval, x0, y0, x0 + w, y1, r=36, alfa=a, opak=0.84)
+        yapistir(tuval, avatar(av, "b"), x0 + 28 + av / 2, y0 + h / 2, alfa=a)
+        yaz(tuval, metin, x0 + 28 + av + 22, y0 + h / 2 + asc * 0.36, "nunito", boyut, METIN, 800, alfa=a)
     return tuval

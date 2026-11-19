@@ -6,6 +6,7 @@ Arayüz düz bir ekran haresine (780x1688) çizilir, telefon gövdesiyle birlikt
 import functools
 import numpy as np, cv2
 from ortak import *  # noqa: F401,F403  (Z dahil)
+import ortak as O
 
 ARALIK = (1.6, 7.1)
 
@@ -37,10 +38,10 @@ def _yer(dikey):
     if dikey:
         return dict(c0=(540, 1010), s0=0.80, son=son, kart=(900, 236),
                     kc=[(522, 884), (548, 1152), (528, 1420)], ka=[-1.6, 1.2, -0.8], yon=[-1, 1, -1],
-                    hos=(540, 992, 760, 176))
+                    hos=(540, 992, 760, 176), grup=None)
     return dict(c0=(600, 545), s0=0.536, son=son, kart=(860, 226),
                 kc=[(1360, 268), (1405, 540), (1368, 812)], ka=[-1.5, 1.0, -1.2], yon=[1, 1, 1],
-                hos=(1380, 500, 800, 186))
+                hos=(1408, 716, 800, 186), grup=(1408, 384, 880, 320))
 
 
 # ------------------------------------------------------------------ telefonun duruşu
@@ -100,6 +101,9 @@ def _hap(im, x, y, metin, boyut, yazi_renk, zemin_renk, yuk, dolgu=22, agirlik=8
 
 
 def _ust(im, baslik):
+    kutu(im, UW / 2 - 66, 28, UW / 2 + 66, 68, 20, (20, 17, 16))          # kamera adası (markasız)
+    daire(im, UW / 2 + 40, 48, 8, (38, 36, 50))
+    daire(im, UW / 2 + 42, 46, 2.5, (90, 96, 130))
     yaz(im, "09:41", 58, 64, "nunito", 28, METIN, 800)
     kutu(im, 664, 40, 714, 64, 7, None, cerceve=METIN, cerceve_kalinlik=2.5)
     kutu(im, 669, 45, 700, 59, 3, METIN)
@@ -222,10 +226,33 @@ def _ekran(t):
 # ------------------------------------------------------------------ telefon gövdesi
 @functools.lru_cache(maxsize=None)
 def _govde():
+    """Markasız cihaz: mat metal çerçeve, ince pah, sol üstten gelen kenar ışığı, yan tuşlar."""
     k = np.zeros((GH, GW, 4), np.uint8)
-    kutu(k, PAY, PAY, GW - PAY, GH - PAY, EKRAN_R + CER, GOVDE_RENK)
-    kutu(k, PAY + 3, PAY + 3, GW - PAY - 3, GH - PAY - 3, EKRAN_R + CER - 3, None, cerceve=(98, 86, 80), cerceve_kalinlik=2.5)
+    for x0, y0, x1, y1 in [(GW - PAY - 3, PAY + 430, GW - PAY + 7, PAY + 590),          # güç
+                           (PAY - 7, PAY + 330, PAY + 3, PAY + 410), (PAY - 7, PAY + 450, PAY + 3, PAY + 590)]:  # ses
+        kutu(k, x0, y0, x1, y1, 4, (74, 64, 60))
+    R = EKRAN_R + CER
+    kutu(k, PAY, PAY, GW - PAY, GH - PAY, R, (58, 49, 46))
+    y, x = np.mgrid[0:GH, 0:GW].astype(np.float32)
+    isik = 1.42 - 0.62 * np.clip((x / GW * 0.55 + y / GH * 0.45), 0, 1)                 # sol üst aydınlık, sağ alt koyu
+    k[..., :3] = np.clip(k[..., :3] * isik[..., None], 0, 255).astype(np.uint8)
+    kutu(k, PAY + 1.5, PAY + 1.5, GW - PAY - 1.5, GH - PAY - 1.5, R - 1.5, None, cerceve=(176, 160, 150), cerceve_kalinlik=2.5, alfa=0.85)  # dış pah
+    kutu(k, PAY + 7, PAY + 7, GW - PAY - 7, GH - PAY - 7, R - 7, None, cerceve=(34, 28, 26), cerceve_kalinlik=3)                          # pah gölgesi
+    kutu(k, PAY + CER - 3, PAY + CER - 3, GW - PAY - CER + 3, GH - PAY - CER + 3, EKRAN_R + 3, None, cerceve=(16, 13, 12), cerceve_kalinlik=6)  # cam kenarı
+    hl = np.zeros((GH, GW, 4), np.uint8)                                                # sol üst kenarda ince ışık çizgisi
+    kutu(hl, PAY + 3, PAY + 3, GW - PAY - 3, GH - PAY - 3, R - 3, None, cerceve=(255, 244, 232), cerceve_kalinlik=2)
+    yog = np.clip(1.15 - (x / GW + y / GH) * 1.9, 0, 1) ** 1.5 * 0.75
+    katman_bas(k, (hl * yog[..., None]).astype(np.uint8))
     return k
+
+
+@functools.lru_cache(maxsize=None)
+def _yansima():
+    """Ekran camındaki çok hafif çapraz yansıma (alfa haritası, iki ekran genişliğinde; telefon dönerken kayar)."""
+    y, x = np.mgrid[0:UH, 0:2 * UW].astype(np.float32)
+    d = x - 0.42 * y
+    a = 0.060 * np.exp(-((d - 560) / 190) ** 2) + 0.034 * np.exp(-((d - 980) / 70) ** 2)
+    return a.astype(np.float32)
 
 
 @functools.lru_cache(maxsize=None)
@@ -236,13 +263,15 @@ def _kose_maske():
     return m[..., :1].astype(np.float32) / 255
 
 
-def _telefon_hare(t):
+def _telefon_hare(t, yaw=0.0):
     g = _govde().copy()
     e = _ekran(t)
     o, R = PAY + CER, EKRAN_R + 2
     roi = g[o:o + UH, o:o + UW]
     eski = [roi[ys, xs, :3].copy() for ys in (slice(0, R), slice(UH - R, UH)) for xs in (slice(0, R), slice(UW - R, UW))]
-    roi[..., :3] = e
+    kay = int(np.clip(UW / 2 - 46 * yaw + 26 * np.sin(0.45 * t), 0, UW))
+    a = _yansima()[:, kay:kay + UW, None]
+    roi[..., :3] = (e + (255.0 - e) * a + 0.5).astype(np.uint8)
     m, i = _kose_maske(), 0
     for ys in (slice(0, R), slice(UH - R, UH)):
         for xs in (slice(0, R), slice(UW - R, UW)):
@@ -288,14 +317,69 @@ def _dikdortgen_kose(cx, cy, w, h, aci=0.0, olcek=1.0):
     return P @ np.array([[c, s], [-s, c]], np.float32) + (cx, cy)
 
 
+def _golge(tuval, P, renk, alfa, sigma):
+    """Çokgenin yumuşak gölgesi/ışığı; büyük bulanıklıkta küçültülmüş maskeyle hızlı."""
+    if alfa <= 0.004:
+        return
+    P = np.asarray(P, np.float32)
+    H, W = tuval.shape[:2]
+    pay = int(sigma * 3) + 2
+    x0, y0 = max(0, int(P[:, 0].min()) - pay), max(0, int(P[:, 1].min()) - pay)
+    x1, y1 = min(W, int(P[:, 0].max()) + pay), min(H, int(P[:, 1].max()) + pay)
+    if x1 - x0 < 2 or y1 - y0 < 2:
+        return
+    k = max(1, int(sigma / 3))
+    w, h = max(2, (x1 - x0) // k), max(2, (y1 - y0) // k)
+    mk = np.zeros((h, w), np.uint8)
+    cv2.fillPoly(mk, [np.round((P - (x0, y0)) / k * 16).astype(np.int32)], 255, cv2.LINE_AA, 4)
+    mk = cv2.GaussianBlur(mk, (0, 0), max(0.6, sigma / k))
+    mk = cv2.resize(mk, (x1 - x0, y1 - y0), interpolation=cv2.INTER_LINEAR).astype(np.float32) / 255
+    O._birlestir(tuval, renk, mk * alfa, x0, y0)
+
+
+_KENAR = {}
+
+
+def _kenar(hare):
+    """Kartın kalınlığı: aynı biçimin koyu krem kopyası (altından ince kenar olarak görünür)."""
+    if id(hare) not in _KENAR:
+        k = np.zeros_like(hare)
+        a = hare[..., 3:].astype(np.float32) / 255
+        k[..., :3] = (np.array((216, 201, 190), np.float32) * a + 0.5).astype(np.uint8)
+        k[..., 3] = hare[..., 3]
+        _KENAR[id(hare)] = k
+    return _KENAR[id(hare)]
+
+
 def _kalkan(tuval, hare, q, alfa, yuk):
-    """Dört köşeye oturan hareyi, yüksekliğe (0..1) göre büyüyüp yumuşayan gölgesiyle basar."""
+    """Dört köşeye oturan hareyi kâğıt kalınlığı ve katmanlı gölgeyle basar (ışık sol üstten). yuk: 0..1 yükseklik."""
     if alfa <= 0.01:
         return
     w = np.linalg.norm(q[1] - q[0])
-    cokgen(tuval, q * 0.985 + q.mean(0) * 0.015 + (0, w * (0.012 + 0.045 * yuk)), (110, 70, 45),
-           (0.10 + 0.10 * yuk) * alfa, bulanik=w * (0.012 + 0.030 * yuk))
-    donustur(tuval, hare, dortgen((hare.shape[1], hare.shape[0]), q), alfa)
+    ic = q * 0.98 + q.mean(0) * 0.02
+    _golge(tuval, ic + (w * 0.030 * yuk, w * (0.014 + 0.062 * yuk)), (104, 66, 42), (0.07 + 0.11 * yuk) * alfa, w * (0.014 + 0.036 * yuk))  # uzun, yumuşak
+    _golge(tuval, ic + (2 + 3 * yuk, 5 + 6 * yuk), (84, 52, 34), 0.20 * alfa, 4 + 5 * yuk)                                               # temas
+    M = dortgen((hare.shape[1], hare.shape[0]), q)
+    kal = 2.0 + 3.5 * yuk
+    donustur(tuval, _kenar(hare), _oteleme(0.6, kal) @ M, alfa)
+    donustur(tuval, hare, M, alfa)
+
+
+@functools.lru_cache(maxsize=None)
+def _grup_kart(w, h):
+    """Yatay kurulum: grup sayfasının başlığını büyüten, öne kalkmış kart."""
+    k = np.zeros((h, w, 4), np.uint8)
+    kutu(k, 0, 0, w, h, 40, BEYAZ)
+    kutu(k, 1, 1, w - 1, h - 1, 39, None, cerceve=CIZGI_GRI, cerceve_kalinlik=2)
+    gen = yaz(k, "Beşiktaş · 0–6 ay anneleri", 46, 104, "nunito", 61, METIN, 900)
+    assert gen < w - 80, gen
+    yaz(k, "Akran grubu · 128 anne", 46, 160, "nunito", 38, METIN2, 700)
+    for i, tp in enumerate("abcdef"):
+        x = 46 + 54 + 84 * i
+        daire(k, x, 242, 58, BEYAZ)
+        yapistir(k, avatar(106, tp), x, 242)
+    _hap(k, 46 + 54 + 84 * 6 - 34, 206, "+122", 34, (75, 119, 92), ADACAYI_ACIK, 72, dolgu=26)
+    return k
 
 
 # ------------------------------------------------------------------ çizgi yolları
@@ -385,16 +469,20 @@ def ciz(t, K, tuval):
     s = poz[2]
 
     # telefon: gölge + gövde (yükselirken dikey hareket bulanıklığı, kartlar kalkınca sığ alan derinliği)
-    hare = _telefon_hare(t)
+    hare = _telefon_hare(t, poz[3])
     hiz = abs(_poz(t, K)[1] - _poz(t - 1 / Z.FPS, K)[1])
     kb = min(48, int(hiz * 0.5 / s))
     if kb >= 3:
         hare = cv2.blur(hare, (1, kb | 1))
     kalkis = max(yumusak(ara(t, tk, tk + KART_SURE)) for tk in Z.KARTLAR) * (1 - ara(t, Z.GRUP_GECIS, 4.78))
     if kalkis > 0.02:
-        hare = cv2.GaussianBlur(hare, (0, 0), 1.9 * kalkis / s)
+        hare = cv2.GaussianBlur(hare, (0, 0), 2.2 * kalkis / s)
     kose = nokta(Mg, [(PAY, PAY), (GW - PAY, PAY), (GW - PAY, GH - PAY), (PAY, GH - PAY)])
-    cokgen(tuval, kose * 0.97 + kose.mean(0) * 0.03 + (0, 46 * s), (95, 62, 42), 0.24, bulanik=36 * s)
+    orta = kose.mean(0)
+    yerde = cik(ara(t, 1.6, Z.TELEFON_OTUR), 2)
+    _golge(tuval, (kose - orta) * 1.05 + orta, (255, 241, 224), 0.34 * yerde, 64 * s)                 # ekran ışığının çevreye yansıması
+    _golge(tuval, (kose - orta) * 0.95 + orta + (64 * s, 92 * s), (98, 62, 40), 0.20, 58 * s)         # uzun yumuşak gölge (ışık sol üstten)
+    _golge(tuval, (kose - orta) * 0.985 + orta + (9 * s, 15 * s), (70, 44, 30), 0.34, 11 * s)         # temas gölgesi
     donustur(tuval, hare, Mg)
 
     # çizgi (t >= FIRLAMA'da birleştirici devralır; buton düz mercan kalır)
@@ -403,6 +491,11 @@ def ciz(t, K, tuval):
         kutu(tuval, B[0][0], B[0][1], B[1][0], B[1][1], (B[1][1] - B[0][1]) / 2, MERCAN)
     else:
         _cizgi_ciz(t, K, tuval, Mu)
+    bas_h = np.sin(np.pi * ara(t, Z.DOKUNUS - 0.04, Z.DOKUNUS + 0.24)) ** 2
+    if bas_h > 0.01:                                               # dokunuşta ekran hafifçe içe basılır
+        bx, by = nokta(Mu, [(UW / 2 + 150, DUGME_CY + 6)])[0]
+        a = np.linspace(0, 2 * np.pi, 40, endpoint=False)
+        _golge(tuval, np.stack([bx + 78 * s * np.cos(a), by + 62 * s * np.sin(a)], 1), (120, 44, 30), 0.26 * bas_h, 16 * s)
     if t >= Z.DOLGU_BAS:
         _beyaz_yazi(tuval, Mu, kar(KAPAK0, KAPAK1, gir_cik(ara(t, Z.DOLGU_BAS, Z.DOLGU_SON))) + DUGME_H * 0.42)
 
@@ -435,13 +528,26 @@ def ciz(t, K, tuval):
         if 0 < h < 1:
             halka(tuval, dx, dy, s * (40 + 300 * cik(h, 2)), (1 - h) ** 1.5 * 0.85, MERCAN if j != 1 else BEYAZ, 5 * s)
 
-    # "Hoş geldin!" kartı butondan öne kalkar
+    # yatay: grup başlığı sağdaki boşluğa, öne kalkmış kart olarak büyür
+    if Y["grup"] is not None and t >= 4.86:
+        gx, gy, gw, gh = Y["grup"]
+        tg = 4.86
+        p = geri(ara(t, tg, tg + 0.44), 1.15)
+        A = nokta(Mu, [(30, 220), (750, 220), (750, 560), (30, 560)])
+        hedef = _dikdortgen_kose(gx + 5 * np.sin(1.0 * t), gy + 6 * np.sin(0.8 * t + 1), gw, gh, 1.1, 1 + 0.008 * (t - tg))
+        _kalkan(tuval, _grup_kart(gw, gh), A + (hedef - A) * p, ara(t, tg, tg + 0.09), min(1.0, max(0.0, p)))
+
+    # "Hoş geldin!" kartı butondan kalkar: dikeyde butonun altındaki boşluğa, yatayda grup kartının altına
     t0 = Z.DOKUNUS + 0.05
     if t >= t0:
         hx, hy, hw, hh = Y["hos"]
         p = geri(ara(t, t0, t0 + 0.36), 1.5)
         B = nokta(Mu, [(DUGME[0] + 60, DUGME[1]), (DUGME[2] - 60, DUGME[1]), (DUGME[2] - 60, DUGME[3]), (DUGME[0] + 60, DUGME[3])])
-        hedef = _dikdortgen_kose(hx + 4 * np.sin(1.3 * t), hy - 16 * (t - t0), hw, hh, -1.2, 1 + 0.03 * (t - t0))
+        if K.dikey:
+            c = nokta(Mu, [(UW / 2, 1428)])[0]
+            hedef = _dikdortgen_kose(c[0], c[1], hw, hh, -1.0, s / Y["son"][2] * (1 + 0.012 * (t - t0)))
+        else:
+            hedef = _dikdortgen_kose(hx + 4 * np.sin(1.3 * t), hy - 10 * (t - t0), hw, hh, -1.2, 1 + 0.02 * (t - t0))
         _kalkan(tuval, _hos_kart(hw, hh), B + (hedef - B) * p, ara(t, t0, t0 + 0.08), min(1.0, max(0.0, p)))
     return tuval
 

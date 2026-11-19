@@ -77,6 +77,26 @@ def gecis_s3_s4(t, K, tuval):
     return tuval
 
 
+# ------------------------------------------------------------------ mercek: gerçekçilik için son işlem
+_EGRI = None
+
+
+def son_isleme(img):
+    """Hafif ışık taşması (bloom) + yumuşak kontrast eğrisi: düz çizimi 'çekilmiş' gibi gösterir."""
+    global _EGRI
+    if _EGRI is None:
+        x = np.arange(256, dtype=np.float32) / 255
+        _EGRI = np.clip((x + 0.06 * np.sin(2 * np.pi * (x - 0.5)) * -0.5) * 255 + 0.5, 0, 255).astype(np.uint8)
+    h, w = img.shape[:2]
+    k = cv2.resize(img, (w // 6, h // 6), interpolation=cv2.INTER_AREA).astype(np.float32)
+    parlak = np.clip(k - 205, 0, None) * 2.2
+    parlak = cv2.GaussianBlur(parlak, (0, 0), 7)
+    tasma = cv2.resize(parlak, (w, h), interpolation=cv2.INTER_LINEAR)
+    out = img.astype(np.float32)
+    out += (255 - out) * np.clip(tasma / 255, 0, 1) * 0.35
+    return cv2.LUT(np.clip(out + 0.5, 0, 255).astype(np.uint8), _EGRI)
+
+
 # ------------------------------------------------------------------ kare
 S45_BAS, S45_SON = 9.85, 10.20
 
@@ -84,7 +104,7 @@ S45_BAS, S45_SON = 9.85, 10.20
 def kare(i, K, gren=True):
     t = i / Z.FPS
     tuval = O.zemin(t, K)
-    pin, tel, sokak, canta, son = (sahne(a) for a in ("pin", "telefon", "sokak", "canta", "son"))
+    pin, tel, sokak, canta, etk, son = (sahne(a) for a in ("pin", "telefon", "sokak", "canta", "etkinlik", "son"))
     if icinde(pin, t):
         tuval = pin.ciz(t, K, tuval)
     if icinde(tel, t) and t < G_AC:
@@ -100,10 +120,11 @@ def kare(i, K, gren=True):
         else:
             tuval = canta.ciz(t, K, O.zemin(t, K))
     tuval = gecis_s3_s4(t, K, tuval)
+    if icinde(etk, t):
+        tuval = etk.ciz(t, K, tuval)
     if icinde(son, t):
         tuval = son.ciz(t, K, tuval)
-    if i >= TOPLAM - 12:                              # son 12 karede çok hafif kararma yok; kart sabit kalır
-        pass
+    tuval = son_isleme(tuval)
     return O.gren(tuval, i) if gren else tuval
 
 
