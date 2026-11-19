@@ -102,7 +102,7 @@ def _soz(t, K, tuval, M, s):
 # ------------------------------------------------------------------ S7 + S8
 def _kilit(t, K):
     """Yatay logo kilidinin merkezi ve ölçeği (S8'de yerini değiştirir)."""
-    e = gir_cik(ara(t, Z.KAPANIS_SLOGAN, Z.KAPANIS_SLOGAN + 0.42))
+    e = gir_cik(ara(t, Z.KAPANIS_SLOGAN, Z.KAPANIS_SLOGAN + 0.50))
     c0 = np.array(K.logo_merkez, np.float32)
     if K.dikey:
         return kar(c0, np.array((540, 640), np.float32), e), 1.0
@@ -155,8 +155,8 @@ def _logo(t, K, tuval, M, s):
         if pw < 1 or e < 1:
             xs = np.arange(wy, dtype=np.float32)
             sag = np.clip((cik(pw, 2) * (wy + 40) - xs) / 40, 0, 1)
-            ikon_sag = (C[0] + 69 * b * rel + 10 * g - (L0[0] + 162 * b * g)) / g      # ikonun sağ kenarı (yazı pikseli)
-            sol = np.clip((xs - ikon_sag) / 24, 0, 1)
+            ikon_sag = (C[0] + 69 * b * rel + 24 * g - (L0[0] + 162 * b * g)) / g      # ikonun sağ kenarı (yazı pikseli)
+            sol = np.clip((xs - ikon_sag) / 18, 0, 1)
             hy = _maskeli(hy, np.broadcast_to(sag * sol, hy.shape[:2]))
         # resmî yatay logoda yazı tam 449 birim eninde ve 110 birimlik kutuda dikey ortalı (0,04 birim pay)
         q = nokta(M, [L0 + g * np.array((162 * b, 14.04 * b), np.float32)])[0]
@@ -181,7 +181,7 @@ def _kapanis(t, K, tuval, M, s):
     yb, yu = (1160, 1296) if d else (668, 778)
     bw, bh = (440, 108) if d else (400, 96)
     for i, (metin, y) in enumerate([("Annelik, birlikte", y1), ("daha kolay.", y2)]):
-        p = cik(ara(t, Z.KAPANIS_SLOGAN + 0.22 + i * 0.10, Z.KAPANIS_SLOGAN + 0.52 + i * 0.10))
+        p = cik(ara(t, Z.KAPANIS_SLOGAN + 0.27 + i * 0.10, Z.KAPANIS_SLOGAN + 0.57 + i * 0.10))
         if p > 0:
             q = nokta(M, [(cx, y + (1 - p) * 26)])[0]
             yaz(tuval, metin, q[0], q[1], "serif", punto, METIN, alfa=p, hiza="orta", olcek=s)

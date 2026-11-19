@@ -252,7 +252,7 @@ def ciz(t, K, tuval):
             return nokta(Mu, yol_parca(D["rota"], 0.0, max(_ilerleme(u), 0.0015)))
         kal = 13 * z
         if _ilerleme(t) < 1 or t < 10.0:
-            cizgi(tuval, alt_zaman(yol, t, 3), kal)
+            cizgi(tuval, alt_zaman(yol, t, 6), kal)
         else:
             cizgi(tuval, yol(t), kal)
 
