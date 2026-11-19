@@ -1,6 +1,6 @@
-"""Öneri + güven sahnesi (20.40–25.60): annelerin birbirine önerdiği üç kart
-(kreş, çocuk doktoru, pişik kremi) kelimeyle aynı anda öne kalkar; çizgi kartları
-tek hatla bağlar, sonra "Doğrulanmış anneler" kalkanını çizer. Yüz ve insan yok."""
+"""Öneri + güven sahnesi: annelerin birbirine önerdiği üç kart (kreş, çocuk doktoru,
+pişik kremi) kelimeyle aynı anda öne kalkar; çizgi kartları bir ipe dizer gibi tek sakin
+hatla bağlar, sonra "Doğrulanmış anneler" kalkanını çizer. Yüz ve insan yok."""
 import functools, json
 import numpy as np, cv2
 import ortak as O
@@ -10,12 +10,15 @@ ARALIK = (Z.ONERI_BAS, Z.SLOGAN_BAS)
 
 
 def _kelime_anlari():
-    v = dict(kres=20.60, doktor=21.06, pisik=22.09, dogrulanmis=23.00, anneler=23.54, onersin=24.13, guvenle=24.81)
+    v = dict(kres=19.60, doktor=20.25, deneyen=20.63, soylesin=21.03, dogrulanmis=21.90, anneler=22.63, icin=23.31, rahat=23.77, etsin=24.23)
     try:
-        d = json.load(open(f"{O.KOK}/cikti/ses/kilit_lilyv3_2.json"))["satirlar"]
-        a = {k["k"].lower(): k["bas"] for s in d[9:11] for k in s["kelimeler"]}
-        for anahtar, kelime in [("kres", "kreş"), ("doktor", "doktor"), ("pisik", "pişik"), ("dogrulanmis", "doğrulanmış"),
-                                ("anneler", "anneler"), ("onersin", "önersin"), ("guvenle", "güvenle")]:
+        d = json.load(open(f"{O.KOK}/cikti/ses/kilit_lilyv3_1.json"))["satirlar"]
+        a = {}
+        for s in d:
+            if s["metin"].startswith("Kreşi") or s["metin"].lower().startswith("doğrulanmış"):
+                a.update({k["k"].lower(): k["bas"] for k in s["kelimeler"]})
+        for anahtar, kelime in [("kres", "kreşi"), ("doktor", "doktoru"), ("deneyen", "deneyen"), ("soylesin", "söylesin"), ("dogrulanmis", "doğrulanmış"),
+                                ("anneler", "anneler"), ("icin", "için"), ("rahat", "rahat"), ("etsin", "etsin")]:
             v[anahtar] = a.get(kelime, v[anahtar])
     except Exception:
         pass
@@ -23,20 +26,21 @@ def _kelime_anlari():
 
 
 W_ = _kelime_anlari()
-T_KART = [W_["kres"], W_["doktor"], W_["pisik"]]
-KARTLAR = [("Kreş", "Minik Adımlar Kreşi", "3 anne önerdi"),
-           ("Çocuk doktoru", "Mahallende, 4 dk", "5 anne önerdi"),
-           ("Pişik kremi", "Kokusuz, işe yarıyor", "7 anne önerdi")]
+T_KART = [W_["kres"], W_["doktor"], W_["deneyen"]]
+KARTLAR = [("Kreş", "3 anne önerdi"), ("Çocuk doktoru", "5 anne önerdi"), ("Pişik kremi", "7 anne önerdi")]
 GOLGE = (96, 70, 58)
 
 
 # ------------------------------------------------------------------ yerleşim
 @functools.lru_cache(maxsize=2)
 def _yer(dikey):
-    if dikey:
-        return dict(kw=900, kh=300, merkez=[(540, 880), (540, 1230), (540, 1580)], egim=[-1.0, 0.8, -0.6],
+    if dikey:      # kartlar alt alta, ip sol kenarda aşağı iner
+        return dict(kw=820, kh=260, merkez=[(592, 868), (592, 1212), (592, 1556)], egim=[-0.8, 0.6, -0.5],
+                    dugum=[(96, 868), (106, 1212), (96, 1556)],
                     kalkan=(540, 312), kb=272, etiket=(540, 548, "orta", 62), alt=(540, 612, "orta", 38))
-    return dict(kw=540, kh=430, merkez=[(330, 735), (960, 735), (1590, 735)], egim=[-0.8, 0.5, -0.6],
+    # yatay: kartlar yan yana, ip üstlerinden geçer (ipe asılı gibi)
+    return dict(kw=500, kh=400, merkez=[(360, 762), (960, 762), (1560, 762)], egim=[-0.7, 0.4, -0.5],
+                dugum=[(360, 506), (960, 514), (1560, 506)],
                 kalkan=(700, 250), kb=244, etiket=(850, 246, "sol", 66), alt=(852, 306, "sol", 38))
 
 
@@ -128,33 +132,30 @@ def _kart(i, dikey):
     """Kartın değişmeyen kısmı. Dönüş: (hare, yıldız merkezleri, yıldız yarıçapı)."""
     Y = _yer(dikey)
     w, h = Y["kw"], Y["kh"]
-    baslik, alt, hap = KARTLAR[i]
+    baslik, hap = KARTLAR[i]
     k = O.bos_katman((w, h + 8))
     O.kutu(k, 0, 7, w, h + 7, 30, (228, 214, 202))                 # kâğıt kalınlığı
     O.kutu(k, 0, 0, w, h, 30, O.BEYAZ)
     karo = (O.NIL_ACIK, O.YAVRUAGZI_ACIK, O.NIL_ACIK)[i]
     if dikey:
-        O.kutu(k, 28, 28, 272, 272, 26, karo)
-        NESNE[i](k, 150, 146, 1.22)
-        O.yaz(k, baslik, 304, 104, "nunito", 58, O.METIN, 800)
-        O.yaz(k, alt, 304, 158, "nunito", 38, O.METIN2, 600)
-        r, ys, xs, adim, hb = 21, 226, 326, 48, 36
-        hx1, hy0, hy1 = w - 28, 196, 256
+        O.kutu(k, 28, 28, 232, 232, 26, karo)
+        NESNE[i](k, 130, 126, 1.04)
+        O.yaz(k, baslik, 264, 114, "nunito", 62, O.METIN, 800)
+        r, ys, xs, adim, hb = 20, 190, 286, 46, 36
+        hx1, hy0, hy1 = w - 28, 160, 220
     else:
-        O.kutu(k, 26, 26, w - 26, 216, 24, karo)
-        NESNE[i](k, w / 2, 120, 0.98)
-        O.yaz(k, baslik, 32, 280, "nunito", 46, O.METIN, 800)
-        O.yaz(k, alt, 32, 322, "nunito", 30, O.METIN2, 600)
-        r, ys, xs, adim, hb = 16, 376, 50, 37, 28
-        hx1, hy0, hy1 = w - 26, 352, 400
+        O.kutu(k, 26, 26, w - 26, 206, 24, karo)
+        NESNE[i](k, w / 2, 114, 0.94)
+        O.yaz(k, baslik, 32, 274, "nunito", 48, O.METIN, 800)
+        r, ys, xs, adim, hb = 16, 336, 50, 37, 28
+        hx1, hy0, hy1 = w - 26, 312, 360
     gen = O.yazi_olcu(hap, "nunito", hb, 800)[0]
     O.kutu(k, hx1 - gen - 2 * hb * 0.62, hy0, hx1, hy1, (hy1 - hy0) / 2, O.KREM2)
     O.yaz(k, hap, hx1 - hb * 0.62, (hy0 + hy1) / 2 + hb * 0.34, "nunito", hb, O.METIN2, 800, hiza="sag")
     yildiz = [(xs + j * adim, ys) for j in range(5)]
     for (x, y) in yildiz:
         O.cokgen(k, _yildiz_n(x, y, r), O.CIZGI_GRI)
-    # sol üstten gelen ışık: sağ alta doğru çok hafif koyulaşma
-    yy, xx = np.mgrid[0:h + 8, 0:w].astype(np.float32)
+    yy, xx = np.mgrid[0:h + 8, 0:w].astype(np.float32)             # sol üstten ışık: sağ alta doğru çok hafif koyulaşma
     kararma = np.clip((xx / w * 0.5 + yy / h * 0.5) - 0.35, 0, 1) * 0.045
     k[..., :3] = (k[..., :3].astype(np.float32) * (1 - kararma[..., None])).astype(np.uint8)
     return k, yildiz, r
@@ -193,11 +194,11 @@ def _rozet(dikey):
 
 @functools.lru_cache(maxsize=2)
 def _lekeler(dikey):
-    """Arka plan ışık lekeleri: 1/8 çözünürlükte bir kez kurulur."""
+    """Arka plan ışık lekeleri (hafif): 1/8 çözünürlükte bir kez kurulur."""
     K = O.DIKEY if dikey else O.YATAY
     w, h = K.W // 8, K.H // 8
     k = O.bos_katman((w, h))
-    for (fx, fy, fr, renk, al) in [(0.22, 0.20, 0.42, O.NIL_ACIK, 0.85), (0.86, 0.62, 0.46, O.YAVRUAGZI_ACIK, 0.8), (0.18, 0.92, 0.36, O.NIL_ACIK, 0.6)]:
+    for (fx, fy, fr, renk, al) in [(0.22, 0.20, 0.42, O.NIL_ACIK, 0.45), (0.86, 0.62, 0.46, O.YAVRUAGZI_ACIK, 0.40), (0.18, 0.92, 0.36, O.NIL_ACIK, 0.30)]:
         r = fr * min(w, h)
         O.cokgen(k, _elips(fx * w, fy * h, r, r * 0.9, 48), renk, al, bulanik=7.5)
     return k
@@ -205,7 +206,7 @@ def _lekeler(dikey):
 
 # ------------------------------------------------------------------ çizginin yolu
 def _kalkan_yolu(cx, cy, boy):
-    """Kalkanın dış hattı: üst ortadan başlar, saat yönünde döner, üst ortada kapanır."""
+    """Kalkanın dış hattı (kapalı): üst ortadan başlar, saat yönünde döner."""
     h, w = boy / 2, boy * 0.41
     ust = np.array([(0, -h), (w * 0.72, -h)], np.float32)
     kose = O.bezier((w * 0.72, -h), (w, -h), (w, -h), (w, -h * 0.72), 8)
@@ -215,41 +216,43 @@ def _kalkan_yolu(cx, cy, boy):
     return np.concatenate([sag, sol[1:]]) + (cx, cy)
 
 
+def _kalkan_soldan(cx, cy, boy):
+    """Aynı hat, sol kenarın ortasından başlayıp saatin tersine (aşağı doğru) dönen kapalı tur."""
+    P = _kalkan_yolu(cx, cy, boy)[:-1][::-1]
+    i = int(np.argmin(np.hypot(P[:, 0] - (cx - boy * 0.41), P[:, 1] - (cy - boy * 0.12))))
+    P = np.roll(P, -i, axis=0)
+    return np.concatenate([P, P[:1]])
+
+
 @functools.lru_cache(maxsize=2)
 def _yol(dikey):
-    """Tek hat: giriş → kartların altı → kalkan → çıkış. Dönüş: (noktalar, birikimli uzunluk, anahtar uzunluklar)."""
+    """Tek hat, sırayla: ipin ucu → (ip) → giriş → kalkan turu → çıkış.
+    Dönüş: (noktalar, birikimli uzunluk, [düğüm3, düğüm2, düğüm1, giriş, kalkan başı, kalkan sonu, çıkış] uzunlukları)."""
     K = O.DIKEY if dikey else O.YATAY
     Y = _yer(dikey)
     g, c = np.array(K.oneri_giris, np.float32), np.array(K.slogan_giris, np.float32)
-    kx, ky = Y["kalkan"]
-    kal = _kalkan_yolu(kx, ky, Y["kb"])
-    tepe = kal[0]
-    D = lambda a, b: np.array([a, b], np.float32)
+    kal = _kalkan_soldan(*Y["kalkan"], Y["kb"])
+    k0 = kal[0]
+    d1, d2, d3 = (np.array(p, np.float32) for p in Y["dugum"])
     if dikey:
-        y1, y2, y3 = 1052, 1402, 1752
-        parca = [O.bezier(g, (60, 640), (30, 980), (110, y1), 30), D((110, y1), (970, y1)),
-                 O.bezier((970, y1), (1062, y1), (1062, y2), (970, y2), 30), D((970, y2), (110, y2)),
-                 O.bezier((110, y2), (18, y2), (18, y3), (110, y3), 30), D((110, y3), (970, y3)),
-                 O.bezier((970, y3), (1075, y3), (1066, 1300), (1058, 760), 40),
-                 O.bezier((1058, 760), (1050, 300), (880, 120), tepe, 40), kal,
-                 O.bezier(tepe, (330, tepe[1] - 20), (60, 330), c, 40)]
-        anahtar_i = (0, 1, 3, 5, 7, 8, 9)
+        ip = [O.bezier(d3 + (4, 96), d3 + (2, 60), d3 + (0, 30), d3, 10), O.bezier(d3, d3 - (0, 120), d2 + (0, 120), d2, 24),
+              O.bezier(d2, d2 - (0, 120), d1 + (0, 120), d1, 24), O.bezier(d1, d1 - (0, 130), g + (-40, 150), g, 24)]
+        giris_kalkan = O.bezier(g, g + (40, -150), k0 + (-150, -190), k0, 36)
+        cikis = O.bezier(k0, k0 + (0, 150), (40, 470), (46, 610), 30), O.bezier((46, 610), (50, 680), (90, 700), c, 14)
     else:
-        y = 978
-        parca = [O.bezier(g, (120, 330), (10, 940), (80, y), 34), D((80, y), (606, y)), D((606, y), (1236, y)), D((1236, y), (1840, y)),
-                 O.bezier((1840, y), (1925, y), (1900, 700), (1896, 470), 30),
-                 O.bezier((1896, 470), (1890, 60), (1100, 40), tepe, 44), kal,
-                 O.bezier(tepe, (560, tepe[1] - 10), (430, 190), c, 34)]
-        anahtar_i = (0, 1, 2, 3, 5, 6, 7)
-    P = [parca[0]]
-    sonlar = []
+        ip = [O.bezier(d3 + (250, -10), d3 + (160, 0), d3 + (80, 0), d3, 10), O.bezier(d3, d3 - (200, 0), d2 + (200, 0), d2, 24),
+              O.bezier(d2, d2 - (200, 0), d1 + (200, 0), d1, 24), O.bezier(d1, d1 - (190, 0), g + (-150, 170), g, 26)]
+        giris_kalkan = O.bezier(g, g + (120, -140), k0 + (-120, -170), k0, 34)
+        cikis = O.bezier(k0, k0 + (0, 120), (470, 430), (380, 400), 26), O.bezier((380, 400), (330, 380), (350, 332), c, 14)
+    parca = ip + [giris_kalkan, kal, *cikis]
+    P, sonlar = [parca[0]], []
     for p in parca[1:]:
         sonlar.append(sum(len(q) for q in P) - 1)
         P.append(np.asarray(p, np.float32)[1:])
     sonlar.append(sum(len(q) for q in P) - 1)
     P = np.concatenate(P).astype(np.float32)
     d = np.concatenate([[0], np.cumsum(np.linalg.norm(np.diff(P, axis=0), axis=1))])
-    L = [float(d[sonlar[i]]) for i in anahtar_i]          # [alt çizgi başı, kart1 sonu, kart2 sonu, kart3 sonu, kalkan başı, kalkan sonu, çıkış sonu]
+    L = [float(d[sonlar[i]]) for i in (0, 1, 2, 3, 4, 5, 7)]
     return P, d, L
 
 
@@ -266,15 +269,13 @@ def _anahtar(t, kareler):
 def _cizgi_yolu(t, dikey):
     P, d, L = _yol(dikey)
     tk, tg = T_KART, Z.ONERI_GUVEN
-    bas = _anahtar(t, [(Z.ONERI_BAS, 0), (tk[0], L[0]), (tk[0] + 0.02, L[0]), (tk[0] + 0.42, L[1]),
-                       (tk[1], L[1]), (tk[1] + 0.48, L[2]), (tk[2], L[2]), (tk[2] + 0.50, L[3]),
-                       (tg, L[3]), (tg + 0.32, L[4]), (tg + 0.80, L[5]),
-                       (Z.ONERI_GECIS + 0.02, L[5]), (Z.SLOGAN_BAS - 0.03, L[6])])
-    kuyruk = _anahtar(t, [(tg, 0), (tg + 0.90, L[4]), (Z.ONERI_GECIS + 0.04, L[4]), (Z.SLOGAN_BAS - 0.03, L[6] - 120)])
-    if t < Z.ONERI_BAS + 0.03:
-        kuyruk = 0
-    bas = max(bas, kuyruk + 2)
-    return O.yol_parca(P, kuyruk / d[-1], bas / d[-1])
+    # ipin ucu: girişten düğümlere iner (uzunluk azalır)
+    uc = _anahtar(t, [(Z.ONERI_BAS, L[3]), (tk[0], L[2]), (tk[0] + 0.05, L[2]), (tk[1], L[1]), (tk[1] + 0.03, L[1]), (tk[2], L[0]), (tk[2] + 0.30, 0.0),
+                      (tg + 0.10, 0.0), (tg + 0.95, L[4]), (Z.ONERI_GECIS + 0.03, L[4]), (Z.SLOGAN_BAS - 0.03, L[6] - 120)])
+    # öbür uç: ONERI_GUVEN'de girişten kalkana uzanır ve turu çizer; sonda çıkışa akar
+    bas = _anahtar(t, [(tg, L[3]), (tg + 0.28, L[4]), (tg + 0.85, L[5]), (Z.ONERI_GECIS, L[5]), (Z.SLOGAN_BAS - 0.03, L[6])])
+    bas = max(bas, uc + 2)
+    return O.yol_parca(P, uc / d[-1], bas / d[-1])
 
 
 # ------------------------------------------------------------------ kamera
@@ -291,10 +292,10 @@ def ciz(t, K, tuval):
     Y = _yer(dk)
     M, ks = _kamera(t, K)
     zemin = tuval.copy()
-    sol = O.yumusak(O.ara(t, Z.ONERI_GECIS, Z.SLOGAN_BAS - 0.05))
+    sol = O.yumusak(O.ara(t, Z.ONERI_GECIS, Z.SLOGAN_BAS - 0.04))
+    tg = Z.ONERI_GUVEN
 
-    # arkada yumuşak nil / yavruağzı ışık lekeleri (palet + derinlik); önbellekten, kamerayla hafifçe kayar
-    gir = O.yumusak(O.ara(t, Z.ONERI_BAS, Z.ONERI_BAS + 0.5))
+    gir = O.yumusak(O.ara(t, Z.ONERI_BAS, Z.ONERI_BAS + 0.5))        # arkada hafif ışık lekeleri
     if gir > 0:
         p = O.nokta(M, [(K.cx, K.cy)])[0]
         O.yapistir(tuval, _lekeler(dk), p[0], p[1] + 8 * np.sin(t * 0.8), alfa=gir, olcek=8 * ks)
@@ -310,8 +311,8 @@ def ciz(t, K, tuval):
         olcek = (0.70 + 0.30 * e) * ks * (1 + 0.006 * np.sin(1.7 * t + i * 2.1))
         alfa = min(1.0, p * 3.2)
         cx, cy = O.nokta(M, [Y["merkez"][i]])[0]
-        cy += (1 - O.cik(p)) * 90 + 3.5 * np.sin(1.3 * t + i * 1.9)
-        aci = Y["egim"][i] + (1 - O.cik(p)) * (7 if i % 2 else -7) + 0.25 * np.sin(0.9 * t + i)
+        cy += (1 - O.cik(p)) * 70 + 3.5 * np.sin(1.3 * t + i * 1.9)
+        aci = Y["egim"][i] + (1 - O.cik(p)) * (6 if i % 2 else -6) + 0.25 * np.sin(0.9 * t + i)
         hw, hh = w * olcek / 2, h * olcek / 2
         kalk = 0.55 + 0.45 * O.cik(p)                                # yükseldikçe gölge uzar ve yumuşar
         O.golge(tuval, cx - hw + 14, cy - hh + 10, cx + hw + 22, cy + hh + 10, 30, bulanik=34 * kalk, alfa=0.15 * alfa, dy=30 * kalk, renk=GOLGE)
@@ -323,28 +324,26 @@ def ciz(t, K, tuval):
             if q > 0:
                 x, y = O.nokta(Mk, [(sx, sy)])[0]
                 O.yapistir(tuval, _yildiz(yr), x, y, alfa=min(1, q * 3), olcek=olcek * (0.4 + 0.6 * O.geri(q, 2.4)), aci=aci)
-        tb = W_["onersin"] + i * 0.09                                 # "Doğrulanmış anne" rozeti
+        tb = W_["anneler"] + i * 0.10                                 # "Doğrulanmış anne" rozeti
         q = O.ara(t, tb, tb + 0.6)
         if q > 0:
             rz = _rozet(dk)
             x, y = O.nokta(Mk, [(w - rz.shape[1] / 2 - (6 if dk else 0), 4 if dk else 2)])[0]
             O.yapistir(tuval, rz, x, y, alfa=min(1, q * 4), olcek=olcek * max(0.05, float(O.yay(q, 5.5, 1.6))), aci=aci - 2 + 3 * (1 - O.cik(q)))
 
-    # kalkan: dolgu, onay, etiket
-    tg = Z.ONERI_GUVEN
+    # kalkan: dolgu, parlama, etiket
     kx, ky = Y["kalkan"]
     kal = O.nokta(M, _kalkan_yolu(kx, ky, Y["kb"] - 16))
-    dolu = O.yumusak(O.ara(t, tg + 0.62, tg + 0.95))
+    dolu = O.yumusak(O.ara(t, tg + 0.70, tg + 1.05))
     kmer = O.nokta(M, [(kx, ky)])[0]
     if dolu > 0:
         O.cokgen(tuval, kal + (5, 14), GOLGE, 0.20 * dolu, bulanik=12)
         O.cokgen(tuval, kal, O.NIL, dolu)
         O.cokgen(tuval, O.nokta(M, _kalkan_yolu(kx - Y["kb"] * 0.05, ky - Y["kb"] * 0.07, Y["kb"] * 0.72)), (255, 255, 255), 0.10 * dolu)
-    par = O.ara(t, W_["guvenle"], W_["guvenle"] + 0.75)               # "güvenle": kalkan hafifçe parlar
-    if 0 < par < 1:
-        for gec in (0.0, 0.22):
-            q = O.ara(par, gec, 1)
-            O.halka(tuval, kmer[0], kmer[1], Y["kb"] * (0.55 + 0.75 * O.cik(q)) * ks, 0.55 * (1 - q) ** 1.5, O.NIL, 5)
+    for tp in (W_["icin"], W_["rahat"] + 0.08):                      # "için rahat etsin": kalkan yumuşakça parlar
+        q = O.ara(t, tp, tp + 0.9)
+        if 0 < q < 1:
+            O.halka(tuval, kmer[0], kmer[1], Y["kb"] * (0.56 + 0.62 * O.cik(q)) * ks, 0.42 * (1 - q) ** 1.6, O.NIL, 5)
     for anahtar, (x, y, hiza, boy), metin, renk, ag in [("dogrulanmis", Y["etiket"], "Doğrulanmış anneler", O.METIN, 800),
                                                          ("anneler", Y["alt"], "Güvenli, denetlenen topluluk", O.NIL_KOYU, 700)]:
         q = O.ara(t, W_[anahtar] + 0.05, W_[anahtar] + 0.45)
@@ -352,15 +351,23 @@ def ciz(t, K, tuval):
             p = O.nokta(M, [(x, y)])[0]
             O.yaz(tuval, metin, p[0], p[1] + (1 - O.cik(q)) * 22, "nunito", boy, renk, ag, alfa=O.yumusak(q), hiza=hiza, olcek=ks)
 
-    # sönme: sahne geriye bulanıklaşıp çıplak zemine döner
-    if sol > 0:
+    if sol > 0:                                                      # sönme: sahne geriye bulanıklaşıp çıplak zemine döner
         tuval = O.karistir(O.bulanik(tuval, 16 * sol), zemin, sol)
 
     # çizgi (tek hat) — her şeyin üstünde, sönmeden etkilenmez
+    kal_c = 12 if dk else 11
     yollar = [O.nokta(M, p) for p in O.alt_zaman(lambda u: _cizgi_yolu(u, dk), t, n=4)]
     hareketli = float(np.abs(yollar[0][-1] - yollar[-1][-1]).max()) > 0.5 or float(np.abs(yollar[0][0] - yollar[-1][0]).max()) > 0.5
-    O.cizgi(tuval, yollar if hareketli else yollar[-1], 12 if dk else 11)
-    onay = O.ara(t, tg + 0.78, tg + 1.10)                             # onay işareti: iki parça, o da cizgi() ile
+    O.cizgi(tuval, yollar if hareketli else yollar[-1], kal_c)
+    for i in range(3):                                               # ipteki düğümler: kart belirirken parlar (ip toplanınca söner)
+        q = O.ara(t, T_KART[i] - 0.02, T_KART[i] + 0.5)
+        kalan = 1 - O.ara(t, tg + 0.10 + (2 - i) * 0.22, tg + 0.30 + (2 - i) * 0.22)
+        if q > 0 and kalan > 0:
+            dp = O.nokta(M, [Y["dugum"][i]])
+            O.cizgi(tuval, np.concatenate([dp, dp]), kal_c * (1 + 1.5 * O.geri(q, 2.2) - 0.55 * O.cik(q)) * kalan, alfa=min(1, q * 5))
+            if q < 1:
+                O.halka(tuval, dp[0, 0], dp[0, 1], 14 + 46 * O.cik(q), 0.6 * (1 - q) ** 1.5, O.SOMON, 4)
+    onay = O.ara(t, tg + 0.85, tg + 1.15)                             # onay işareti: o da cizgi() ile
     if onay > 0 and sol < 1:
         u = Y["kb"] / 272
         isaret = np.array([(kx - 44 * u, ky + 2 * u), (kx - 12 * u, ky + 36 * u), (kx + 48 * u, ky - 38 * u)], np.float32)
